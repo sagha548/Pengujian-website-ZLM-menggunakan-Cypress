@@ -1,20 +1,14 @@
-# Cypress hasil testing
+# Node modules
+node_modules/
+
+# Cypress
 cypress/screenshots/
 cypress/videos/
 
-# Folder contoh Cypress
-cypress/e2e/1-getting-started/
-cypress/e2e/2-advanced-examples/
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Dependency Node
-node_modules/
-
-# File sistem Windows
-Thumbs.db
-.DS_Store
-
-# File environment
+# Environment
 .env
-
-# Log
-*.log
