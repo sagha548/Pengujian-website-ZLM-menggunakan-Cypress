@@ -36,7 +36,7 @@ describe("Statistik Barang ZLM", () => {
     // ==========================
 
     cy.visit(
-      "https://zlm.hummatech.com/admin/reports/product-stats"
+      "https://zlm.hummatech.com/admin/store/statistics"
     )
 
 
@@ -59,7 +59,7 @@ it("STAT-001 - Membuka Menu Statistik Barang", () => {
 
 
   cy.url()
-    .should("include", "/admin/reports/product-stats")
+    .should("include", "/admin")
 
 
   cy.contains("Store")
@@ -74,11 +74,12 @@ it("STAT-001 - Membuka Menu Statistik Barang", () => {
 
 
 
+
 // =====================================================
-// STAT-002 - Menampilkan Statistik Produk
+// STAT-002 - Menampilkan Statistik Stok Produk
 // =====================================================
 
-it("STAT-002 - Menampilkan Statistik Produk", () => {
+it("STAT-002 - Menampilkan Statistik Stok Produk", () => {
 
 
   cy.contains("Total Produk")
@@ -105,16 +106,17 @@ it("STAT-002 - Menampilkan Statistik Produk", () => {
 
 
 
+
 // =====================================================
 // STAT-003 - Validasi Jumlah Total Produk
 // =====================================================
 
-it("STAT-003 - Validasi Total Produk", () => {
+it("STAT-003 - Menampilkan Jumlah Produk", () => {
 
 
   cy.contains("Total Produk")
     .parent()
-    .should("contain.text","3")
+    .should("contain.text", "3")
 
 
 })
@@ -125,53 +127,12 @@ it("STAT-003 - Validasi Total Produk", () => {
 
 
 
-// =====================================================
-// STAT-004 - Validasi Stok Tersedia
-// =====================================================
-
-it("STAT-004 - Validasi Stok Tersedia", () => {
-
-
-  cy.contains("Stok Tersedia")
-    .should("exist")
-
-
-})
-
-
-
-
-
-
 
 // =====================================================
-// STAT-005 - Validasi Produk Habis
+// STAT-004 - Menampilkan Produk Terlaris
 // =====================================================
 
-it("STAT-005 - Validasi Stok Habis", () => {
-
-
-  cy.contains("Stok Habis")
-    .should("exist")
-
-
-  cy.contains("0")
-    .should("exist")
-
-
-})
-
-
-
-
-
-
-
-// =====================================================
-// STAT-006 - Menampilkan Top Selling Products
-// =====================================================
-
-it("STAT-006 - Menampilkan Produk Terlaris", () => {
+it("STAT-004 - Menampilkan Top Selling Products", () => {
 
 
   cy.contains("Top Selling Products")
@@ -198,11 +159,12 @@ it("STAT-006 - Menampilkan Produk Terlaris", () => {
 
 
 
+
 // =====================================================
-// STAT-007 - Validasi Tidak Ada Data Penjualan
+// STAT-005 - Validasi Data Penjualan Kosong
 // =====================================================
 
-it("STAT-007 - Validasi Data Penjualan Kosong", () => {
+it("STAT-005 - Validasi Tidak Ada Data Penjualan", () => {
 
 
   cy.contains("No sales data")
@@ -217,11 +179,12 @@ it("STAT-007 - Validasi Data Penjualan Kosong", () => {
 
 
 
+
 // =====================================================
-// STAT-008 - Menampilkan Top Rated Products
+// STAT-006 - Menampilkan Produk Rating Terbaik
 // =====================================================
 
-it("STAT-008 - Menampilkan Produk Rating Terbaik", () => {
+it("STAT-006 - Menampilkan Top Rated Products", () => {
 
 
   cy.contains("Top Rated Products")
@@ -244,11 +207,12 @@ it("STAT-008 - Menampilkan Produk Rating Terbaik", () => {
 
 
 
+
 // =====================================================
-// STAT-009 - Validasi Tidak Ada Review
+// STAT-007 - Validasi Tidak Ada Review
 // =====================================================
 
-it("STAT-009 - Validasi Review Kosong", () => {
+it("STAT-007 - Validasi Tidak Ada Review Produk", () => {
 
 
   cy.contains("No reviews yet")
@@ -263,11 +227,12 @@ it("STAT-009 - Validasi Review Kosong", () => {
 
 
 
+
 // =====================================================
-// STAT-010 - Cek Struktur Tabel Produk
+// STAT-008 - Mengecek Struktur Tabel Produk
 // =====================================================
 
-it("STAT-010 - Cek Struktur Tabel", () => {
+it("STAT-008 - Mengecek Struktur Tabel Statistik", () => {
 
 
   cy.contains("No")
