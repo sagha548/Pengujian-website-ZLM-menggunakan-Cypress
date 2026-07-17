@@ -14,10 +14,11 @@ describe("Category Management ZLM", () => {
 
     cy.url().should("include", "/admin")
 
-    // Buka menu kategori
+    // Buka halaman kategori
     cy.visit("https://zlm.hummatech.com/admin/categories")
 
   })
+
 
   // ============================================
   // CATEGORY-001
@@ -35,19 +36,27 @@ describe("Category Management ZLM", () => {
 
 
   // ============================================
-  // CATEGORY-002
-  // Mencari kategori
-  // ============================================
-  it("CATEGORY-002 - Mencari kategori", () => {
+// CATEGORY-002
+// Mencari kategori
+// ============================================
+it("CATEGORY-002 - Mencari kategori", () => {
 
-    cy.get('input[name="search"]')
-      .type("Gaming{enter}")
+  cy.get('input[name="search"]')
+    .should("be.visible")
+    .clear()
+    .type("Automation Testing")
 
-    cy.contains("Gaming")
-      .should("be.visible")
+  cy.get('input[name="search"]')
+    .type("{enter}")
 
+  cy.wait(2000)
+
+  cy.contains("Automation Testing", {
+    timeout: 10000
   })
+  .should("be.visible")
 
+})
 
   // ============================================
   // CATEGORY-003
@@ -59,7 +68,7 @@ describe("Category Management ZLM", () => {
       .click()
 
     cy.url()
-      .should("include", "/create")
+      .should("include", "/categories/create")
 
   })
 
@@ -81,56 +90,117 @@ describe("Category Management ZLM", () => {
 
 
   // ============================================
-  // CATEGORY-005
-  // Menghapus kategori
-  // ============================================
-  it("CATEGORY-005 - Menghapus kategori", () => {
-
-    cy.on("window:confirm", () => true)
-
-    cy.get('form button')
-      .last()
-      .click({ force: true })
-
-  })
- // ============================================
-// CATEGORY-006 - Menambahkan kategori baru
+// CATEGORY-005
+// Menambahkan lalu menghapus kategori
 // ============================================
-it("CATEGORY-006 - Menambahkan kategori baru", () => {
+it("CATEGORY-005 - Menghapus kategori", () => {
 
-  // Buka halaman tambah kategori
+  // Nama kategori unik agar tidak duplicate
+  const categoryName = `Automation Delete ${Date.now()}`
+
+  // =============================
+  // Tambah kategori
+  // =============================
   cy.contains("Add Category").click()
 
   cy.url().should("include", "/categories/create")
 
-  // Isi nama kategori
   cy.get('input[name="name"]')
-    .type("Automation Testing")
+    .type(categoryName)
 
-  // Isi icon
+  cy.get('input[name="icon"]')
+    .clear()
+    .type("solar:folder-linear")
+
+  cy.get('textarea[name="description"]')
+    .type("Kategori khusus automation testing.")
+
+  cy.get('input[type="checkbox"]')
+    .check({ force: true })
+
+  cy.contains("Create Category").click()
+
+  cy.url({ timeout: 10000 })
+    .should("include", "/admin/categories")
+
+  // =============================
+  // Cari kategori yang baru dibuat
+  // =============================
+  cy.get('input[name="search"]')
+    .clear()
+    .type(`${categoryName}{enter}`)
+
+  cy.contains(categoryName)
+    .should("exist")
+
+  // =============================
+  // Hapus kategori tersebut
+  // =============================
+  cy.on("window:confirm", () => true)
+
+  cy.contains("tr", categoryName)
+    .within(() => {
+      cy.get('button[title="Delete"]').click()
+    })
+
+  // =============================
+  // Validasi data sudah terhapus
+  // =============================
+  cy.reload()
+
+  cy.get('input[name="search"]')
+    .clear()
+    .type(`${categoryName}{enter}`)
+
+  cy.contains(categoryName)
+    .should("not.exist")
+
+})
+  // ============================================
+  // CATEGORY-006
+  // Menambahkan kategori baru
+  // ============================================
+  it("CATEGORY-006 - Menambahkan kategori baru", () => {
+
+  const categoryName = `Automation Testing ${Date.now()}`
+
+
+  cy.contains("Add Category")
+    .click()
+
+
+  cy.url()
+    .should("include", "/categories/create")
+
+
+  cy.get('input[name="name"]')
+    .type(categoryName)
+
+
   cy.get('input[name="icon"]')
     .clear()
     .type("solar:gamepad-linear")
 
-  // Isi deskripsi
+
   cy.get('textarea[name="description"]')
-    .type("Kategori untuk pengujian automation menggunakan Cypress.")
+    .type("Kategori untuk pengujian automation Cypress.")
 
-  // Status Active (jika belum tercentang)
+
   cy.get('input[type="checkbox"]')
-    .check({ force: true })
+    .check({force:true})
 
-  // Klik tombol Create Category
+
   cy.contains("Create Category")
     .click()
 
-  // Validasi kembali ke halaman kategori
-  cy.url()
+
+  cy.url({timeout:10000})
     .should("include", "/admin/categories")
 
-  // Validasi data berhasil ditambahkan
-  cy.contains("Automation Testing")
+
+  cy.contains(categoryName)
     .should("be.visible")
 
-})
+}) 
+
 })
