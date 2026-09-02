@@ -1,8 +1,8 @@
 describe("Login ZLM", () => {
 
   beforeEach(() => {
-    cy.visit("https://zlm.hummatech.com/login")
-  })
+    cy.visit("/login");
+  });
 
   // =====================================================
   // LOGIN-001 - Memasukkan Email dan Password yang Valid
@@ -10,143 +10,158 @@ describe("Login ZLM", () => {
   it("LOGIN-001 - Memasukkan Email dan Password yang Valid", () => {
 
     cy.get("#email")
-      .type("admin@zlm.id")
+      .should("be.visible")
+      .type(Cypress.env("ADMIN_EMAIL"));
 
     cy.get("#password")
-      .type("admin123")
+      .should("be.visible")
+      .type(Cypress.env("ADMIN_PASSWORD"));
 
     cy.get("#login-btn")
-      .click()
+      .should("be.visible")
+      .click();
 
-    cy.url()
-      .should("include", "/admin")
+    cy.location("pathname", { timeout: 10000 })
+      .should("include", "/admin");
+  });
 
-  })
 
-
-  // ===================================
+  // =====================================================
   // LOGIN-002 - Email Kosong
-  // ===================================
+  // =====================================================
   it("LOGIN-002 - Email Kosong", () => {
 
     cy.get("#password")
-      .type("admin123")
+      .should("be.visible")
+      .type(Cypress.env("ADMIN_PASSWORD"));
 
     cy.get("#login-btn")
-      .click()
+      .should("be.visible")
+      .click();
 
-    cy.get("#email:invalid")
-      .should("exist")
+    cy.get("#email")
+      .should("have.prop", "validity")
+      .and("have.property", "valid", false);
+  });
 
-  })
 
-
-  // ===================================
+  // =====================================================
   // LOGIN-003 - Password Kosong
-  // ===================================
+  // =====================================================
   it("LOGIN-003 - Password Kosong", () => {
 
     cy.get("#email")
-      .type("admin@zlm.id")
+      .should("be.visible")
+      .type(Cypress.env("ADMIN_EMAIL"));
 
     cy.get("#login-btn")
-      .click()
+      .should("be.visible")
+      .click();
 
-    cy.get("#password:invalid")
-      .should("exist")
+    cy.get("#password")
+      .should("have.prop", "validity")
+      .and("have.property", "valid", false);
+  });
 
-  })
 
-
-  // ===================================
+  // =====================================================
   // LOGIN-004 - Email dan Password Kosong
-  // ===================================
+  // =====================================================
   it("LOGIN-004 - Email dan Password Kosong", () => {
 
     cy.get("#login-btn")
-      .click()
+      .should("be.visible")
+      .click();
 
-    cy.get("#email:invalid")
-      .should("exist")
+    cy.get("#email")
+      .should("have.prop", "validity")
+      .and("have.property", "valid", false);
 
-  })
+    cy.get("#password")
+      .should("have.prop", "validity")
+      .and("have.property", "valid", false);
+  });
 
 
-  // ===================================
+  // =====================================================
   // LOGIN-005 - Email Tidak Terdaftar
-  // ===================================
+  // =====================================================
   it("LOGIN-005 - Email Tidak Terdaftar", () => {
 
     cy.get("#email")
-      .type("salah@email.com")
+      .should("be.visible")
+      .type("salah@email.com");
 
     cy.get("#password")
-      .type("admin123")
+      .should("be.visible")
+      .type(Cypress.env("ADMIN_PASSWORD"));
 
     cy.get("#login-btn")
-      .click()
+      .should("be.visible")
+      .click();
 
-    cy.url()
-      .should("include", "/login")
+    cy.location("pathname", { timeout: 10000 })
+      .should("eq", "/login");
 
-    // Ganti sesuai pesan yang muncul pada website
-    cy.contains(/invalid|gagal|email|password/i)
-      .should("exist")
-
-  })
+    cy.contains("These credentials do not match our records.")
+      .should("be.visible");
+  });
 
 
-  // ===================================
+  // =====================================================
   // LOGIN-006 - Show / Hide Password
-  // ===================================
+  // =====================================================
   it("LOGIN-006 - Show Hide Password", () => {
 
     cy.get("#password")
-      .type("admin123")
-      .should("have.attr", "type", "password")
+      .should("be.visible")
+      .type(Cypress.env("ADMIN_PASSWORD"))
+      .should("have.attr", "type", "password");
 
-    // Sesuaikan selector tombol mata
-    cy.get('button[type="button"]')
-      .last()
-      .click()
-
-    cy.get("#password")
-      .should("have.attr", "type", "text")
-
-    cy.get('button[type="button"]')
-      .last()
-      .click()
+    // Show password
+    cy.get("#eye-icon")
+      .closest("button")
+      .should("be.visible")
+      .click();
 
     cy.get("#password")
-      .should("have.attr", "type", "password")
+      .should("have.attr", "type", "text");
 
-  })
+    // Hide password
+    cy.get("#eye-icon")
+      .closest("button")
+      .should("be.visible")
+      .click();
+
+    cy.get("#password")
+      .should("have.attr", "type", "password");
+  });
 
 
-  // ===================================
+  // =====================================================
   // LOGIN-007 - Logout Session
-  // ===================================
+  // =====================================================
   it("LOGIN-007 - Logout Session", () => {
 
-    cy.get("#email")
-      .type("admin@zlm.id")
+    cy.login();
 
-    cy.get("#password")
-      .type("admin123")
+    cy.visit("/admin");
 
-    cy.get("#login-btn")
-      .click()
+    cy.location("pathname", { timeout: 10000 })
+      .should("include", "/admin");
 
-    cy.url()
-      .should("include", "/admin")
+    // Pastikan sidebar terlihat
+    cy.get("#admin-sidebar")
+      .invoke("removeClass", "hidden");
 
-    // Klik tombol logout
+    // Logout
     cy.get('button[title="Logout"]')
-  .click({ force: true })
+      .should("be.visible")
+      .click();
 
-    cy.url()
-  .should("eq", "https://zlm.hummatech.com/")
+    // Pastikan berhasil logout
+    cy.location("pathname", { timeout: 10000 })
+      .should("eq", "/");
+  });
 
-  })
-
-})
+});

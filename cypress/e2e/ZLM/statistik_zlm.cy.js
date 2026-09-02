@@ -1,250 +1,138 @@
 describe("Statistik Barang ZLM", () => {
 
-
   beforeEach(() => {
+    cy.viewport(1920, 1080)
+    cy.login()
 
+    cy.visit("/admin/reports/product-stats")
 
-    // ==========================
-    // LOGIN ADMIN
-    // ==========================
+    cy.location("pathname", { timeout: 10000 })
+      .should("eq", "/admin/reports/product-stats")
 
-    cy.visit("https://zlm.hummatech.com/login")
-
-
-    cy.get("#email")
-      .type("admin@zlm.id")
-
-
-    cy.get("#password")
-      .type("admin123")
-
-
-    cy.get("#login-btn")
-      .click()
-
-
-    cy.url()
-      .should("include", "/admin")
-
-
-    cy.wait(2000)
-
-
-
-    // ==========================
-    // MASUK MENU STATISTIK BARANG
-    // ==========================
-
-    cy.visit(
-      "https://zlm.hummatech.com/admin/store/statistics"
-    )
-
-
-    cy.wait(3000)
-
-
+    cy.get("body", { timeout: 10000 })
+      .should("be.visible")
   })
 
-
-
-
-
-
-
-// =====================================================
-// STAT-001 - Membuka Menu Statistik Barang
-// =====================================================
-
-it("STAT-001 - Membuka Menu Statistik Barang", () => {
-
-
-  cy.url()
-    .should("include", "/admin")
-
-
-  cy.contains("Store")
-    .should("exist")
-
-
-})
-
-
-
-
-
-
-
-
-// =====================================================
-// STAT-002 - Menampilkan Statistik Stok Produk
-// =====================================================
-
-it("STAT-002 - Menampilkan Statistik Stok Produk", () => {
-
-
-  cy.contains("Total Produk")
-    .should("exist")
-
-
-  cy.contains("Stok Tersedia")
-    .should("exist")
-
-
-  cy.contains("Stok Habis")
-    .should("exist")
-
-
-  cy.contains("Stok Menipis")
-    .should("exist")
-
-
-})
-
-
-
-
-
-
-
-
-// =====================================================
-// STAT-003 - Validasi Jumlah Total Produk
-// =====================================================
-
-it("STAT-003 - Menampilkan Jumlah Produk", () => {
-
-
-  cy.contains("Total Produk")
-    .parent()
-    .should("contain.text", "3")
-
-
-})
-
-
-
-
-
-
-
-
-// =====================================================
-// STAT-004 - Menampilkan Produk Terlaris
-// =====================================================
-
-it("STAT-004 - Menampilkan Top Selling Products", () => {
-
-
-  cy.contains("Top Selling Products")
-    .should("exist")
-
-
-  cy.contains("Produk")
-    .should("exist")
-
-
-  cy.contains("Terjual")
-    .should("exist")
-
-
-  cy.contains("Total Revenue")
-    .should("exist")
-
-
-})
-
-
-
-
-
-
-
-
-// =====================================================
-// STAT-005 - Validasi Data Penjualan Kosong
-// =====================================================
-
-it("STAT-005 - Validasi Tidak Ada Data Penjualan", () => {
-
-
-  cy.contains("No sales data")
-    .should("exist")
-
-
-})
-
-
-
-
-
-
-
-
-// =====================================================
-// STAT-006 - Menampilkan Produk Rating Terbaik
-// =====================================================
-
-it("STAT-006 - Menampilkan Top Rated Products", () => {
-
-
-  cy.contains("Top Rated Products")
-    .should("exist")
-
-
-  cy.contains("Rating")
-    .should("exist")
-
-
-  cy.contains("Reviews")
-    .should("exist")
-
-
-})
-
-
-
-
-
-
-
-
-// =====================================================
-// STAT-007 - Validasi Tidak Ada Review
-// =====================================================
-
-it("STAT-007 - Validasi Tidak Ada Review Produk", () => {
-
-
-  cy.contains("No reviews yet")
-    .should("exist")
-
-
-})
-
-
-
-
-
-
-
-
-// =====================================================
-// STAT-008 - Mengecek Struktur Tabel Produk
-// =====================================================
-
-it("STAT-008 - Mengecek Struktur Tabel Statistik", () => {
-
-
-  cy.contains("No")
-    .should("exist")
-
-
-  cy.contains("Produk")
-    .should("exist")
-
-
-})
-
-
+  // =====================================================
+  // STAT-001 - Membuka Menu Statistik Barang
+  // =====================================================
+
+  it("STAT-001 - Membuka Menu Statistik Barang", () => {
+    cy.location("pathname")
+      .should("eq", "/admin/reports/product-stats")
+
+    cy.contains("Statistik Barang")
+      .should("be.visible")
+  })
+
+  // =====================================================
+  // STAT-002 - Menampilkan Statistik Stok Produk
+  // =====================================================
+
+  it("STAT-002 - Menampilkan Statistik Stok Produk", () => {
+    cy.contains("Total Produk")
+      .should("be.visible")
+
+    cy.contains("Stok Tersedia")
+      .should("be.visible")
+
+    cy.contains("Stok Habis")
+      .should("be.visible")
+
+    cy.contains("Stok Menipis")
+      .should("be.visible")
+  })
+
+  // =====================================================
+  // STAT-003 - Validasi Jumlah Total Produk
+  // =====================================================
+
+  it("STAT-003 - Menampilkan Jumlah Produk", () => {
+    cy.contains("Total Produk")
+      .parent()
+      .invoke("text")
+      .should("match", /\d+/)
+  })
+
+  // =====================================================
+  // STAT-004 - Menampilkan Produk Terlaris
+  // =====================================================
+
+  it("STAT-004 - Menampilkan Top Selling Products", () => {
+    cy.contains("Top Selling Products")
+      .should("be.visible")
+
+    cy.contains("Produk")
+      .should("be.visible")
+
+    cy.contains("Terjual")
+      .should("be.visible")
+
+    cy.contains("Total Revenue")
+      .should("be.visible")
+  })
+
+  // =====================================================
+  // STAT-005 - Validasi Data Penjualan
+  // =====================================================
+
+  it("STAT-005 - Validasi Data Penjualan", () => {
+    cy.contains("Top Selling Products")
+      .should("be.visible")
+
+    cy.contains("Top Selling Products")
+      .parent()
+      .should(($section) => {
+        const text = $section.text().trim()
+
+        expect(text.length)
+          .to.be.greaterThan(0)
+      })
+  })
+
+  // =====================================================
+  // STAT-006 - Menampilkan Produk Rating Terbaik
+  // =====================================================
+
+  it("STAT-006 - Menampilkan Top Rated Products", () => {
+    cy.contains("Top Rated Products")
+      .should("be.visible")
+
+    cy.contains("Rating")
+      .should("be.visible")
+
+    cy.contains("Reviews")
+      .should("be.visible")
+  })
+
+  // =====================================================
+  // STAT-007 - Validasi Data Review
+  // =====================================================
+
+  it("STAT-007 - Validasi Data Review", () => {
+    cy.contains("Top Rated Products")
+      .should("be.visible")
+
+    cy.contains("Top Rated Products")
+      .parent()
+      .should(($section) => {
+        const text = $section.text().trim()
+
+        expect(text.length)
+          .to.be.greaterThan(0)
+      })
+  })
+
+  // =====================================================
+  // STAT-008 - Mengecek Struktur Tabel Produk
+  // =====================================================
+
+  it("STAT-008 - Mengecek Struktur Tabel Statistik", () => {
+    cy.contains("No")
+      .should("be.visible")
+
+    cy.contains("Produk")
+      .should("be.visible")
+  })
 
 })

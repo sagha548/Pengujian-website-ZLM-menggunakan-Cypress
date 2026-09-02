@@ -1,97 +1,151 @@
 describe("Menu Pelanggan ZLM", () => {
 
+  // ===================================
+  // SETUP
+  // ===================================
   beforeEach(() => {
+    cy.viewport(1920, 1080);
 
-    // Ukuran layar desktop agar sidebar tampil
-    cy.viewport(1920, 1080)
+    cy.login();
 
-    // Login
-    cy.visit("https://zlm.hummatech.com/login")
+    cy.visit("/admin/customers");
 
-    cy.get("#email")
-      .type("admin@zlm.id")
-
-    cy.get("#password")
-      .type("admin123")
-
-    cy.get("#login-btn")
-      .click()
-
-    // Pastikan sudah masuk dashboard
-    cy.url().should("include", "/admin")
-
-    // Tunggu dashboard selesai dimuat
-    cy.wait(2000)
-
-  })
-
-  // ===================================
-  // PEL-001 Membuka menu Pelanggan
-  // ===================================
-  it("PEL-001 - Membuka Menu Pelanggan", () => {
-
-    cy.contains("Pelanggan")
-      .click({ force: true })
-
-    cy.url().should("include", "customer")
-
-  })
+    cy.location("pathname")
+      .should("eq", "/admin/customers");
+  });
 
 
   // ===================================
-  // PEL-002 Pencarian pelanggan
+  // PEL-001
+  // Membuka Menu Pelanggan
+  // ===================================
+it("PEL-001 - Membuka Menu Pelanggan", () => {
+
+  cy.location("pathname")
+    .should("eq", "/admin/customers");
+
+  cy.get("h1")
+    .should("contain.text", "Pelanggan");
+
+  cy.get("table")
+    .should("be.visible");
+});
+
+
+  // ===================================
+  // PEL-002
+  // Pencarian Pelanggan
   // ===================================
   it("PEL-002 - Pencarian Pelanggan", () => {
 
-    cy.contains("Pelanggan")
-      .click({ force: true })
+    cy.get("#search")
+      .should("be.visible")
+      .type("customer");
 
-    cy.get('input[placeholder*="Cari"]')
-      .type("customer")
+    cy.get('button[type="submit"]')
+      .contains("Terapkan")
+      .should("be.visible")
+      .click();
 
-  })
+    cy.location("pathname")
+      .should("eq", "/admin/customers");
+
+    cy.location("search")
+      .should("include", "search=customer");
+
+    // Assert hasil pencarian tampil
+    cy.get("tbody tr")
+      .should("have.length.at.least", 1);
+
+    cy.get("tbody tr")
+      .each(($row) => {
+        cy.wrap($row)
+          .should("contain.text", "customer");
+      });
+  });
 
 
   // ===================================
-  // PEL-003 Filter Active
+  // PEL-003
+  // Filter Active
   // ===================================
   it("PEL-003 - Filter Active", () => {
 
-    cy.contains("Pelanggan")
-      .click({ force: true })
+    cy.get("#status")
+      .should("be.visible")
+      .select("active");
 
-    cy.get("select")
-      .select("Active")
+    cy.get('button[type="submit"]')
+      .contains("Terapkan")
+      .should("be.visible")
+      .click();
 
-  })
+    cy.location("pathname")
+      .should("eq", "/admin/customers");
+
+    cy.location("search")
+      .should("include", "status=active");
+
+    // Assert hasil filter Active
+    cy.get("tbody tr")
+      .should("have.length.at.least", 1);
+
+    cy.get("tbody tr").each(($row) => {
+      cy.wrap($row)
+        .find("td")
+        .eq(2)
+        .should("contain.text", "Active");
+    });
+  });
 
 
   // ===================================
-  // PEL-004 Filter Inactive
+  // PEL-004
+  // Filter Inactive
   // ===================================
   it("PEL-004 - Filter Inactive", () => {
 
-    cy.contains("Pelanggan")
-      .click({ force: true })
+    cy.get("#status")
+      .should("be.visible")
+      .select("inactive");
 
-    cy.get("select")
-      .select("Inactive")
+    cy.get('button[type="submit"]')
+      .contains("Terapkan")
+      .should("be.visible")
+      .click();
 
-  })
+    cy.location("pathname")
+      .should("eq", "/admin/customers");
+
+    cy.location("search")
+      .should("include", "status=inactive");
+
+    // Assert hasil filter Inactive
+    cy.get("tbody tr")
+      .should("have.length.at.least", 1);
+
+    cy.get("tbody tr").each(($row) => {
+      cy.wrap($row)
+        .find("td")
+        .eq(2)
+        .should("contain.text", "Inactive");
+    });
+  });
 
 
   // ===================================
-  // PEL-005 Detail Pelanggan
+  // PEL-005
+  // Detail Pelanggan
   // ===================================
-  it("PEL-005 - Detail Pelanggan", () => {
+it("PEL-005 - Detail Pelanggan", () => {
 
-    cy.contains("Pelanggan")
-      .click({ force: true })
+  cy.get('a[href^="https://zlm.hummatech.com/admin/customers/"]')
+    .contains("Detail")
+    .first()
+    .should("be.visible")
+    .click();
 
-    cy.contains("Detail")
-      .first()
-      .click({ force: true })
-
-  })
-
-})
+  cy.location("pathname")
+    .should("match", /^\/admin\/customers\/[^/]+$/);
+});
+});

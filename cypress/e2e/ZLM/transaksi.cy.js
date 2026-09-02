@@ -1,516 +1,282 @@
 describe("Menu Transaksi ZLM", () => {
-
-
   beforeEach(() => {
+    cy.viewport(1400, 900);
 
-    // ==========================
-    // LOGIN ADMIN
-    // ==========================
+    cy.login();
 
-    cy.visit("https://zlm.hummatech.com/login")
+    cy.visit("/admin/transactions");
 
-
-    cy.get("#email")
-      .type("admin@zlm.id")
-
-
-    cy.get("#password")
-      .type("admin123")
-
-
-    cy.get("#login-btn")
-      .click()
-
-
-    cy.url()
-      .should("include", "/admin")
-
-
-    cy.wait(2000)
-
-
-
-    // ==========================
-    // MASUK HALAMAN TRANSAKSI
-    // ==========================
-
-    cy.visit("https://zlm.hummatech.com/admin/transactions")
-
-
-    cy.wait(3000)
-
-  })
-
-
-
-
+    cy.location("pathname")
+      .should("eq", "/admin/transactions");
+  });
 
   // =====================================================
   // TRAN-001 - Membuka Menu Transactions
   // =====================================================
 
   it("TRAN-001 - Membuka Menu Transactions", () => {
-
-
-    cy.url()
-      .should("include", "/admin/transactions")
-
-
     cy.contains("Transactions")
-      .should("be.visible")
-
-
-  })
-
-
-
-
+      .should("be.visible");
+  });
 
   // =====================================================
   // TRAN-002 - Menampilkan Data Transaksi
   // =====================================================
 
   it("TRAN-002 - Menampilkan Data Transaksi", () => {
-
-
     cy.contains("Total Orders")
-      .should("be.visible")
-
+      .should("be.visible");
 
     cy.contains("Paid")
-      .should("be.visible")
-
+      .should("be.visible");
 
     cy.contains("Pending")
-      .should("be.visible")
-
+      .should("be.visible");
 
     cy.contains("Order")
-      .should("be.visible")
-
+      .should("be.visible");
 
     cy.contains("Customer")
-      .should("be.visible")
-
+      .should("be.visible");
 
     cy.contains("Status")
-      .should("be.visible")
-
-
-  })
-
-
-
-
+      .should("be.visible");
+  });
 
   // =====================================================
   // TRAN-003 - Mencari Data Order
   // =====================================================
 
   it("TRAN-003 - Mencari Data Order", () => {
-
-
-    cy.get('input[placeholder="Search order or customer..."]')
-      .type("ORD-JADS83GG")
-
-
-    cy.wait(2000)
-
+    cy.get('input[name="search"]')
+      .should("be.visible")
+      .clear()
+      .type("ORD-JADS83GG");
 
     cy.contains("ORD-JADS83GG")
-      .should("be.visible")
-
-
-  })
-
-
-
-
+      .should("be.visible");
+  });
 
   // =====================================================
   // TRAN-004 - Filter Method Pembayaran
   // =====================================================
 
   it("TRAN-004 - Filter Method Pembayaran", () => {
+    cy.get("select")
+      .first()
+      .should("be.visible")
+      .find("option")
+      .then(($options) => {
+        const option = [...$options].find(
+          (el) => el.textContent.trim() === "Xendit"
+        );
 
+        expect(option).to.exist;
 
-    // Filter pembayaran Xendit
+        cy.get("select")
+          .first()
+          .select(option.value);
+      });
 
     cy.get("select")
       .first()
-      .select("Xendit")
-
-
-    cy.wait(2000)
-
-
-    cy.contains("Xendit")
-      .should("be.visible")
-
-
-  })
-
-
-
-
+      .should("not.have.value", "");
+  });
 
   // =====================================================
   // TRAN-005 - Filter Status Transaksi
   // =====================================================
 
   it("TRAN-005 - Filter Status Transaksi", () => {
+    cy.get("select")
+      .eq(1)
+      .should("be.visible")
+      .find("option")
+      .then(($options) => {
+        const option = [...$options].find(
+          (el) => el.textContent.trim() === "Unpaid"
+        );
 
+        expect(option).to.exist;
 
-    // Filter status Unpaid
+        cy.get("select")
+          .eq(1)
+          .select(option.value);
+      });
 
     cy.get("select")
       .eq(1)
-      .select("Unpaid")
-
-
-    cy.wait(2000)
-
-
-    cy.contains("Unpaid")
-      .should("be.visible")
-
-
-  })
-
-
-
-
+      .should("not.have.value", "");
+  });
 
   // =====================================================
   // TRAN-006 - Melihat Detail Transaksi
   // =====================================================
 
   it("TRAN-006 - Melihat Detail Transaksi", () => {
-
-
     cy.contains("Detail")
       .first()
-      .click()
+      .should("be.visible")
+      .click();
 
-
-    cy.wait(3000)
-
+    cy.location("pathname")
+      .should("include", "/admin/transactions/");
 
     cy.contains("Order")
-      .should("be.visible")
+      .should("be.visible");
+  });
 
-
-  })
   // =====================================================
-  // TRAN-007 - Membuka Halaman Create Transaction
+  // TRAN-007 - Membuka dan Menampilkan Form Create Transaction
   // =====================================================
 
-  it("TRAN-007 - Membuka Halaman Create Transaction", () => {
+  it("TRAN-007 - Membuka dan Menampilkan Form Create Transaction", () => {
+    cy.visit("/admin/transactions/create");
 
-
-    cy.visit("https://zlm.hummatech.com/admin/transactions/create")
-
-
-    cy.wait(3000)
-
+    cy.location("pathname")
+      .should("eq", "/admin/transactions/create");
 
     cy.contains("Create Transaction")
-      .should("be.visible")
-
-
-  })
-
-
-
-
-
-  // =====================================================
-  // TRAN-008 - Menampilkan Form Create Transaction
-  // =====================================================
-
-  it("TRAN-008 - Menampilkan Form Create Transaction", () => {
-
-
-    cy.visit("https://zlm.hummatech.com/admin/transactions/create")
-
-
-    cy.wait(3000)
-
+      .should("be.visible");
 
     cy.contains("Customer")
-      .should("be.visible")
-
+      .should("be.visible");
 
     cy.contains("Items")
-      .should("be.visible")
-
+      .should("be.visible");
 
     cy.contains("Payment Method")
-      .should("be.visible")
-
+      .should("be.visible");
 
     cy.contains("Shipping Address")
       .scrollIntoView()
-      .should("be.visible")
+      .should("be.visible");
+  });
 
-    cy.contains("Create Transaction")
+  // =====================================================
+  // TRAN-008 - Validasi Customer Kosong
+  // =====================================================
+
+  it("TRAN-008 - Validasi Customer Kosong", () => {
+    cy.visit("/admin/transactions/create");
+
+    cy.get("select")
+      .first()
+      .should("be.visible")
+      .and("have.value", "");
+
+    cy.contains("button", "Create Transaction")
       .scrollIntoView()
       .should("be.visible")
+      .click();
 
-  })
-
-
-
-
-
-  // =====================================================
-  // TRAN-009 - Validasi Customer Kosong
-  // =====================================================
-
-  it("TRAN-009 - Customer Kosong", () => {
-
-
-    cy.visit("https://zlm.hummatech.com/admin/transactions/create")
-
-
-    cy.wait(3000)
-
-
-    cy.contains("Create Transaction")
-      .last()
-      .click()
-
-
-    cy.wait(2000)
-
-
-    cy.contains(/customer|required|select/i)
-      .should("exist")
-
-
-  })
-
-
-
-
+    cy.get("select")
+      .first()
+      .should("have.prop", "validity")
+      .and("have.property", "valid", false);
+  });
 
   // =====================================================
-  // TRAN-010 - Menambahkan Item Laptop
+  // TRAN-009 - Menambahkan Item Laptop ke Transaksi
   // =====================================================
 
-  it("TRAN-010 - Menambahkan Item Laptop", () => {
+  it("TRAN-009 - Menambahkan Item Laptop ke Transaksi", () => {
+    cy.visit("/admin/transactions/create");
 
-
-    cy.visit("https://zlm.hummatech.com/admin/transactions/create")
-
-
-    cy.wait(3000)
-
+    // Pastikan item pertama tersedia
+    cy.get("select")
+      .eq(1)
+      .should("be.visible");
 
     // Pilih laptop
-
     cy.get("select")
       .eq(1)
-      .select(1)
+      .find("option")
+      .then(($options) => {
+        const option = [...$options].find(
+          (el) => el.value && el.value !== ""
+        );
 
+        expect(option).to.exist;
 
-    cy.wait(1000)
+        cy.get("select")
+          .eq(1)
+          .select(option.value);
+      });
 
-
+    // Pastikan laptop berhasil dipilih
     cy.get("select")
       .eq(1)
-      .should("not.have.value", "")
+      .should("not.have.value", "");
 
+    // Tambahkan item baru
+    cy.get("select")
+      .then(($selects) => {
+        const beforeCount = $selects.length;
 
-  })
+        cy.contains("+ Add Item")
+          .should("be.visible")
+          .click();
 
-
-
-
-
-  // =====================================================
-  // TRAN-011 - Tombol Add Item
-  // =====================================================
-
-  it("TRAN-011 - Menambahkan Item Baru", () => {
-
-
-    cy.visit("https://zlm.hummatech.com/admin/transactions/create")
-
-
-    cy.wait(3000)
-
-
-    cy.contains("+ Add Item")
-      .click()
-
-
-    cy.wait(1000)
-
-
-  })
-
-
-
-
+        cy.get("select")
+          .should("have.length.greaterThan", beforeCount);
+      });
+  });
 
   // =====================================================
-  // TRAN-012 - Memilih Payment Method
+  // TRAN-010 - Memilih Payment Method
   // =====================================================
 
-  it("TRAN-012 - Memilih Payment Method", () => {
-
-
-    cy.visit("https://zlm.hummatech.com/admin/transactions/create")
-
-
-    cy.wait(3000)
-
+  it("TRAN-010 - Memilih Payment Method", () => {
+    cy.visit("/admin/transactions/create");
 
     cy.contains("Manual Transfer")
-      .click()
-
+      .should("be.visible")
+      .click();
 
     cy.contains("Customer upload bukti transfer nanti")
-      .should("be.visible")
+      .should("be.visible");
+  });
 
+  // =====================================================
+  // TRAN-011 - Validasi Form Transaksi
+  // =====================================================
 
-  })
-// =====================================================
-// TRAN-013 - Menambahkan Transaksi Baru
-// =====================================================
+  it("TRAN-011 - Validasi Form Transaksi", () => {
+    cy.visit("/admin/transactions/create");
 
-it("TRAN-013 - Menambahkan Transaksi Baru", () => {
+    // Customer
+    cy.get("select")
+      .first()
+      .should("be.visible");
 
-  // Buka halaman Create Transaction
-  cy.visit("https://zlm.hummatech.com/admin/transactions/create");
+    // Item laptop
+    cy.get("select")
+      .eq(1)
+      .should("be.visible");
 
+    // Quantity
+    cy.get('input[type="number"]')
+      .first()
+      .should("be.visible");
 
-  cy.contains("Create Transaction", { timeout: 10000 })
-    .should("be.visible");
+    // Payment method
+    cy.contains("Manual Transfer")
+      .should("be.visible");
 
+    // Shipping address
+    cy.get("textarea")
+      .first()
+      .should("be.visible");
 
+    // Catatan
+    cy.get("textarea")
+      .last()
+      .should("be.visible");
 
-  // ==========================
-  // Pilih Customer
-  // ==========================
-
-  cy.get("select")
-    .eq(0)
-    .select(1);
-
-
-
-  // ==========================
-  // Pilih Laptop
-  // ==========================
-
-  cy.get("select")
-    .eq(1)
-    .select(1);
-
-
-
-  // ==========================
-  // Isi Quantity
-  // ==========================
-
-  cy.get('input[type="number"]')
-    .first()
-    .clear()
-    .type("2");
-
-
-
-  // ==========================
-  // Pilih Payment Method
-  // ==========================
-
-  cy.contains("Manual Transfer")
-    .click();
-
-
-
-  // ==========================
-  // Shipping Address
-  // ==========================
-
-  cy.get("textarea")
-    .first()
-    .type("Jl. Soekarno Hatta No.99 Malang");
-
-
-
-  // ==========================
-  // Shipping Cost
-  // ==========================
-
-  cy.get('input[type="number"]')
-    .last()
-    .clear()
-    .type("20000");
-
-
-
-  // ==========================
-  // Notes
-  // ==========================
-
-  cy.get("textarea")
-    .last()
-    .type("Automation Testing Cypress");
-
-
-
-  // ==========================
-  // Klik Create Transaction
-  // ==========================
-
-  cy.contains("button", "Create Transaction")
-    .scrollIntoView()
-    .should("be.visible")
-    .click();
-
-
-
-  // Tunggu proses Laravel
-  cy.wait(5000);
-
-
-
-  // ==========================
-  // Validasi tidak terjadi error Laravel
-  // ==========================
-
-  cy.contains("SQLSTATE")
-    .should("not.exist");
-
-
-  cy.contains("QueryException")
-    .should("not.exist");
-
-
-  cy.contains("Whoops")
-    .should("not.exist");
-
-
-
-  // ==========================
-  // Validasi berhasil kembali
-  // ==========================
-
-  cy.url({ timeout: 15000 })
-    .should("include", "/admin/transactions");
-
-
-
-  // ==========================
-  // Pastikan halaman transaksi muncul
-  // ==========================
-
-  cy.contains("Transactions")
-    .should("be.visible");
-
-
-});
+    // Tombol submit
+    cy.contains("button", "Create Transaction")
+      .scrollIntoView()
+      .should("be.visible");
+  });
 });

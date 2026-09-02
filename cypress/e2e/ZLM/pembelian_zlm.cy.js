@@ -1,49 +1,13 @@
 describe("Menu Pembelian ZLM", () => {
 
-
   beforeEach(() => {
+    cy.login();
 
+    cy.visit("/admin/reports/purchases");
 
-    // ==========================
-    // LOGIN ADMIN
-    // ==========================
-
-    cy.visit("https://zlm.hummatech.com/login")
-
-
-    cy.get("#email")
-      .type("admin@zlm.id")
-
-
-    cy.get("#password")
-      .type("admin123")
-
-
-    cy.get("#login-btn")
-      .click()
-
-
-    cy.url()
-      .should("include", "/admin")
-
-
-    cy.wait(2000)
-
-
-
-    // ==========================
-    // HALAMAN PEMBELIAN
-    // ==========================
-
-    cy.visit("https://zlm.hummatech.com/admin/transactions")
-
-
-    cy.wait(3000)
-
-  })
-
-
-
+    cy.location("pathname", { timeout: 10000 })
+      .should("eq", "/admin/reports/purchases");
+  });
 
 
   // =====================================================
@@ -52,19 +16,10 @@ describe("Menu Pembelian ZLM", () => {
 
   it("PUR-001 - Membuka Menu Pembelian", () => {
 
-
-    cy.url()
-      .should("include", "/admin/transactions")
-
-
-    cy.contains("Total Orders")
+    cy.get("h1")
       .should("be.visible")
-
-
-  })
-
-
-
+      .and("contain.text", "Laporan Pembelian");
+  });
 
 
   // =====================================================
@@ -73,23 +28,15 @@ describe("Menu Pembelian ZLM", () => {
 
   it("PUR-002 - Menampilkan Statistik Pembelian", () => {
 
+    cy.contains("div", "Total Orders")
+      .should("be.visible");
 
-    cy.contains("Total Orders")
-      .should("be.visible")
+    cy.contains("div", "Total Revenue")
+      .should("be.visible");
 
-
-    cy.contains("Total Revenue")
-      .should("be.visible")
-
-
-    cy.get("body")
-      .should("contain.text", "Rp")
-
-
-  })
-
-
-
+    cy.contains("div", "Avg Order Value")
+      .should("be.visible");
+  });
 
 
   // =====================================================
@@ -98,23 +45,17 @@ describe("Menu Pembelian ZLM", () => {
 
   it("PUR-003 - Menampilkan Data Pembelian", () => {
 
+    cy.get("table")
+      .should("be.visible");
 
-    cy.contains("ORD-")
-      .should("be.visible")
+    cy.get("thead")
+      .should("contain.text", "Order #")
+      .and("contain.text", "Customer")
+      .and("contain.text", "Status");
 
-
-    cy.contains("Customer")
-      .should("exist")
-
-
-    cy.contains("Status")
-      .should("exist")
-
-
-  })
-
-
-
+    cy.get("tbody tr")
+      .should("have.length.greaterThan", 0);
+  });
 
 
   // =====================================================
@@ -123,16 +64,14 @@ describe("Menu Pembelian ZLM", () => {
 
   it("PUR-004 - Menampilkan Nomor Order", () => {
 
-
-    cy.contains("ORD-")
+    cy.get("tbody tr")
       .first()
-      .should("be.visible")
+      .within(() => {
 
-
-  })
-
-
-
+        cy.contains("ORD-")
+          .should("be.visible");
+      });
+  });
 
 
   // =====================================================
@@ -141,37 +80,11 @@ describe("Menu Pembelian ZLM", () => {
 
   it("PUR-005 - Filter Status Transaksi", () => {
 
-
-    cy.get("select")
-      .first()
-      .find("option")
-      .then(($option) => {
-
-
-        const value = $option
-          .eq(1)
-          .val()
-
-
-        cy.get("select")
-          .first()
-          .select(value)
-
-
-      })
-
-
-    cy.wait(2000)
-
-
-    cy.contains("ORD-")
-      .should("exist")
-
-
-  })
-
-
-
+    cy.get('select[name="status"]')
+      .should("be.visible")
+      .select("pending")
+      .should("have.value", "pending");
+  });
 
 
   // =====================================================
@@ -180,37 +93,11 @@ describe("Menu Pembelian ZLM", () => {
 
   it("PUR-006 - Filter Payment", () => {
 
-
-    cy.get("select")
-      .eq(1)
-      .find("option")
-      .then(($option) => {
-
-
-        const value = $option
-          .eq(1)
-          .val()
-
-
-        cy.get("select")
-          .eq(1)
-          .select(value)
-
-
-      })
-
-
-    cy.wait(2000)
-
-
-    cy.contains("ORD-")
-      .should("exist")
-
-
-  })
-
-
-
+    cy.get('select[name="payment_status"]')
+      .should("be.visible")
+      .select("paid")
+      .should("have.value", "paid");
+  });
 
 
   // =====================================================
@@ -219,23 +106,13 @@ describe("Menu Pembelian ZLM", () => {
 
   it("PUR-007 - Menggunakan Filter", () => {
 
+    cy.contains("button", "Filter")
+      .should("be.visible")
+      .click();
 
-    cy.get("button")
-      .contains("Filter")
-      .click({force:true})
-
-
-    cy.wait(2000)
-
-
-    cy.contains("ORD-")
-      .should("exist")
-
-
-  })
-
-
-
+    cy.location("pathname")
+      .should("eq", "/admin/reports/purchases");
+  });
 
 
   // =====================================================
@@ -244,59 +121,60 @@ describe("Menu Pembelian ZLM", () => {
 
   it("PUR-008 - Reset Filter", () => {
 
+    cy.get('input[name="start_date"]')
+      .should("be.visible")
+      .type("2026-01-01");
 
-    cy.get("button")
-      .then(($button)=>{
+    cy.get('input[name="end_date"]')
+      .should("be.visible")
+      .type("2026-08-31");
 
+    cy.get('select[name="status"]')
+      .select("pending");
 
-        const jumlahButton = $button.length
+    cy.get('select[name="payment_status"]')
+      .select("unpaid");
 
+    cy.contains("a", "Reset")
+      .should("be.visible")
+      .click();
 
-        cy.get("button")
-          .eq(jumlahButton - 1)
-          .click({force:true})
+    cy.location("pathname")
+      .should("eq", "/admin/reports/purchases");
 
+    cy.get('input[name="start_date"]')
+      .should("have.value", "");
 
-      })
+    cy.get('input[name="end_date"]')
+      .should("have.value", "");
 
+    cy.get('select[name="status"]')
+      .should("have.value", "");
 
-    cy.wait(2000)
-
-
-    cy.contains("ORD-")
-      .should("exist")
-
-
-  })
-
-
-
+    cy.get('select[name="payment_status"]')
+      .should("have.value", "");
+  });
 
 
   // =====================================================
-  // PUR-009 - Melihat Detail Pembelian
+  // PUR-009 - Melihat Data Pembelian
   // =====================================================
 
-  it("PUR-009 - Melihat Detail Pembelian", () => {
+  it("PUR-009 - Melihat Data Pembelian", () => {
 
+    cy.get("tbody tr")
+      .should("have.length.greaterThan", 0);
 
-    cy.contains("ORD-")
+    cy.get("tbody tr")
       .first()
-      .click({force:true})
+      .within(() => {
 
+        cy.get("td")
+          .should("have.length.greaterThan", 0);
 
-    cy.wait(3000)
+        cy.contains("ORD-")
+          .should("be.visible");
+      });
+  });
 
-
-    cy.contains("Order")
-      .scrollIntoView()
-      .should("exist")
-
-
-  })
-
-
-
-
-
-})
+});

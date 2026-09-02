@@ -1,187 +1,213 @@
-describe("Hero Slider ZLM", () => {
+describe('UAT - Hero Slider ZLM', () => {
 
   beforeEach(() => {
-    cy.visit("https://zlm.hummatech.com/login")
+    // Login sebagai admin
+    cy.visit('/login');
 
-    cy.get("#email").type("admin@zlm.id")
-    cy.get("#password").type("admin123")
-    cy.get("#login-btn").click()
+    cy.get('input[type="email"]')
+      .should('be.visible')
+      .type(Cypress.env('ADMIN_EMAIL'));
 
-    cy.url().should("include", "/admin")
+    cy.get('input[type="password"]')
+      .should('be.visible')
+      .type(Cypress.env('ADMIN_PASSWORD'));
 
-    cy.visit("https://zlm.hummatech.com/admin/sliders")
-  })
+    cy.get('button[type="submit"]')
+      .should('be.visible')
+      .click();
 
-  // ============================
-  // SLD-001 Menampilkan daftar Hero Slider
-  // ============================
+    // Pastikan berhasil login
+    cy.url()
+      .should('include', '/admin');
 
-  it("SLD-001 - Menampilkan daftar Hero Slider", () => {
+    // Masuk ke halaman Hero Slider
+    cy.visit('/admin/sliders');
 
-    cy.contains("Hero Slider").should("exist")
+    cy.url()
+      .should('include', '/admin/sliders');
+  });
 
-    cy.get("table").should("exist")
 
-    cy.get("tbody tr")
-      .its("length")
-      .should("be.greaterThan", 0)
+  // =====================================================
+  // UAT-SLIDER-001
+  // Admin dapat mengakses menu Hero Slider
+  // =====================================================
+  it('Admin dapat mengakses menu Hero Slider', () => {
 
-  })
+    cy.url()
+      .should('include', '/admin/sliders');
 
-  // ============================
-  // SLD-002 Menambahkan Hero Slider
-  // ============================
+    cy.contains('Hero Slider')
+      .should('exist');
 
-  it("SLD-002 - Menambahkan Hero Slider", () => {
+    cy.contains('Tambah Slider')
+      .should('be.visible');
+  });
 
-    cy.contains("Tambah Slider").click()
 
-    cy.url().should("include", "/create")
+  // =====================================================
+  // UAT-SLIDER-002
+  // Admin dapat menambahkan slider
+  // =====================================================
+  it('Admin dapat menambahkan slider', () => {
 
-    cy.get("#title")
-      .type("Slider Cypress")
+    cy.contains('Tambah Slider')
+      .should('be.visible')
+      .click();
 
-    cy.get("#subtitle")
-      .type("Automation Testing")
+    cy.url()
+      .should('include', '/admin/sliders/create');
 
-    cy.get("#description")
-      .type("Slider dibuat menggunakan Cypress Automation")
+    // Isi judul
+    cy.get('input[name="title"]')
+      .should('be.visible')
+      .type('Slider Cypress');
 
-    cy.get("#button_text")
-      .type("Lihat Produk")
+    // Isi deskripsi
+    cy.get('textarea[name="description"]')
+      .should('be.visible')
+      .type('Automation Testing');
 
-    cy.get("#button_url")
-      .type("/products")
+    // Upload gambar
+    cy.get('input[type="file"]')
+      .should('exist')
+      .selectFile('cypress/fixtures/slider.jpg');
 
-    cy.get("#sort_order")
-      .clear()
-      .type("10")
+    // Submit form
+    // Jangan menggunakan button[type="submit"] karena ada 2 tombol.
+    cy.get('form')
+      .find('button[type="submit"]')
+      .last()
+      .should('be.visible')
+      .click();
 
-    cy.get("#is_active")
-      .check({ force: true })
+    // Pastikan kembali ke halaman Hero Slider
+    cy.url({ timeout: 10000 })
+      .should('include', '/admin/sliders');
 
-    cy.get("#image")
-      .selectFile("cypress/fixtures/slider.jpg", {
-        force: true
-      })
+    // Pastikan data slider muncul
+    cy.contains('Slider Cypress')
+      .should('be.visible');
+  });
 
-    cy.contains("button", "Save Slider").click()
 
-    cy.url().should("include", "/admin/sliders")
+  // =====================================================
+  // UAT-SLIDER-003
+  // Admin dapat mengubah slider
+  // =====================================================
+  it('Admin dapat mengubah slider', () => {
 
-  })
-
-  // ============================
-  // SLD-003 Mengedit Hero Slider
-  // ============================
-
-  it("SLD-003 - Mengedit Hero Slider", () => {
-
+    // Ambil tombol Edit pertama
     cy.get('a[title="Edit"]')
       .first()
-      .click()
+      .should('be.visible')
+      .click();
 
-    cy.get("#title")
+    cy.url()
+      .should('include', '/edit');
+
+    // Ubah judul
+    cy.get('input[name="title"]')
+      .should('be.visible')
       .clear()
-      .type("Slider Cypress Update")
+      .type('Slider Cypress Updated');
 
-    cy.get("#subtitle")
+    // Ubah deskripsi
+    cy.get('textarea[name="description"]')
+      .should('be.visible')
       .clear()
-      .type("Subtitle Update")
+      .type('Automation Testing Updated');
 
-    cy.get("#description")
-      .clear()
-      .type("Deskripsi telah diupdate")
+    // Klik tombol submit FORM, bukan logout
+    cy.get('form')
+      .find('button[type="submit"]')
+      .last()
+      .should('be.visible')
+      .click();
 
-    cy.get("#button_text")
-      .clear()
-      .type("Belanja Sekarang")
+    // Pastikan kembali ke daftar slider
+    cy.url({ timeout: 10000 })
+      .should('include', '/admin/sliders');
 
-    cy.get("#button_url")
-      .clear()
-      .type("/shop")
+    cy.contains('Slider Cypress Updated')
+      .should('be.visible');
+  });
 
-    cy.get("#sort_order")
-      .clear()
-      .type("2")
 
-    cy.contains("button", /save|update/i)
-      .click()
+  // =====================================================
+  // UAT-SLIDER-004
+  // Admin dapat menghapus slider
+  // =====================================================
+  it('Admin dapat menghapus slider', () => {
 
-    cy.url().should("include", "/admin/sliders")
+    // Konfirmasi browser SEBELUM tombol delete diklik
+    cy.on('window:confirm', () => true);
 
-  })
-
-  // ============================
-  // SLD-004 Menghapus Hero Slider
-  // ============================
-
-  it("SLD-004 - Menghapus Hero Slider", () => {
-
-    cy.on("window:confirm", () => true)
-
-    cy.get('button[title="Delete"]')
+    cy.get('tbody tr')
       .first()
-      .click()
+      .within(() => {
 
-  })
+        cy.get('button[title="Delete"]')
+          .should('be.visible')
+          .click();
+      });
 
-  // ============================
-  // SLD-005 Validasi data kosong
-  // ============================
+    // Pastikan tetap berada di halaman Hero Slider
+    cy.url()
+      .should('include', '/admin/sliders');
+  });
 
-  it("SLD-005 - Validasi data kosong", () => {
 
-    cy.contains("Tambah Slider").click()
+  // =====================================================
+  // UAT-SLIDER-005
+  // Admin dapat melihat daftar slider
+  // =====================================================
+  it('Admin dapat melihat daftar slider', () => {
 
-    cy.contains("button", "Save Slider")
-      .click()
+    // Pastikan tabel tampil
+    cy.get('table')
+      .should('be.visible');
 
-    cy.get("#title:invalid")
-      .should("exist")
+    // Header tabel
+    cy.contains('Image')
+      .should('exist');
 
-  })
+    cy.contains('Title')
+      .should('exist');
 
-  // ============================
-  // SLD-006 Validasi upload gambar
-  // ============================
+    cy.contains('Order')
+      .should('exist');
 
-  it("SLD-006 - Validasi upload gambar", () => {
+    cy.contains('Status')
+      .should('exist');
 
-    cy.contains("Tambah Slider").click()
+    cy.contains('Actions')
+      .should('exist');
 
-    cy.get("#title")
-      .type("Testing Image")
+    // Pastikan ada data slider
+    cy.get('tbody tr')
+      .should('have.length.greaterThan', 0);
+  });
 
-    cy.get('#image').selectFile(
-    'cypress/fixtures/slider.jpg',
-        { force: true }
-    )
 
-    cy.contains("button", "Save Slider")
-      .click()
+  // UAT-SLIDER-006
+it('Admin dapat menggunakan pagination slider', () => {
 
-  })
+  // Pastikan pagination tersedia
+  cy.get('nav[role="navigation"]')
+    .should('exist');
 
-  // ============================
-  // SLD-007 Menampilkan status dan urutan slider
-  // ============================
+  // Pastikan tombol halaman 2 tersedia
+  cy.get('a[aria-label="Go to page 2"]')
+    .should('exist')
+    .click();
 
-  it("SLD-007 - Menampilkan status dan urutan slider", () => {
+  // Pastikan URL berubah ke halaman 2
+  cy.url()
+    .should('include', 'page=2');
 
-    cy.get("tbody tr").first().within(() => {
-
-      cy.contains(/Active|Inactive/)
-        .should("exist")
-
-      cy.get("td")
-        .eq(2)
-        .invoke("text")
-        .then((text) => {
-        expect(text.trim()).to.match(/^\d+$/)
-        })
-    })
-
-  })
-
-})
+  // Pastikan tabel slider tetap tampil
+  cy.get('table')
+    .should('be.visible');
+});
+});

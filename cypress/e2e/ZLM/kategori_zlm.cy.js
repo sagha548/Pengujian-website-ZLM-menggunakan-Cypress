@@ -1,206 +1,335 @@
 describe("Category Management ZLM", () => {
 
   beforeEach(() => {
+    // =====================================================
+    // SETUP
+    // =====================================================
 
-    // Login
-    cy.viewport(1920, 1080)
+    cy.viewport(1920, 1080);
 
-    cy.visit("https://zlm.hummatech.com/login")
-
-    cy.get("#email").type("admin@zlm.id")
-    cy.get("#password").type("admin123")
-
-    cy.get("#login-btn").click()
-
-    cy.url().should("include", "/admin")
+    // Login menggunakan custom command
+    cy.login();
 
     // Buka halaman kategori
-    cy.visit("https://zlm.hummatech.com/admin/categories")
+    cy.visit("/admin/categories");
 
-  })
+    // Pastikan halaman kategori berhasil dibuka
+    cy.location("pathname")
+      .should("eq", "/admin/categories");
+  });
 
 
-  // ============================================
+  // =====================================================
   // CATEGORY-001
   // Menampilkan halaman kategori
-  // ============================================
+  // =====================================================
   it("CATEGORY-001 - Menampilkan halaman kategori", () => {
 
     cy.get("h1")
-      .should("contain", "Kategori")
+      .should("be.visible")
+      .and("contain", "Kategori");
 
     cy.contains("Manage product categories")
+      .should("be.visible");
+
+    cy.get('input[name="search"]')
+      .should("be.visible");
+
+    // Tombol Add Category
+    cy.get('a[href$="/admin/categories/create"]')
       .should("be.visible")
+      .and("contain", "Add Category");
+  });
 
-  })
+
+  // =====================================================
+  // CATEGORY-002
+  // Mencari kategori
+  // =====================================================
+  it("CATEGORY-002 - Mencari kategori", () => {
+
+    const searchKeyword = "gaming";
+
+    // Monitor request pencarian
+    cy.intercept(
+      "GET",
+      "**/admin/categories?search=*"
+    ).as("searchCategory");
+
+    // Isi pencarian
+    cy.get('input[name="search"]')
+      .should("be.visible")
+      .clear()
+      .type(`${searchKeyword}{enter}`);
+
+    // Pastikan request berhasil
+    cy.wait("@searchCategory")
+      .its("response.statusCode")
+      .should("eq", 200);
+
+    // Validasi parameter search
+    cy.location("search")
+      .then((search) => {
+
+        const params = new URLSearchParams(search);
+
+        expect(params.get("search"))
+          .to.eq(searchKeyword);
+
+      });
+
+    // Validasi hasil pencarian
+    cy.contains(searchKeyword, {
+      timeout: 10000
+    })
+      .should("be.visible");
+  });
 
 
-  // ============================================
-// CATEGORY-002
-// Mencari kategori
-// ============================================
-it("CATEGORY-002 - Mencari kategori", () => {
-
-  cy.get('input[name="search"]')
-    .should("be.visible")
-    .clear()
-    .type("Automation Testing")
-
-  cy.get('input[name="search"]')
-    .type("{enter}")
-
-  cy.wait(2000)
-
-  cy.contains("Automation Testing", {
-    timeout: 10000
-  })
-  .should("be.visible")
-
-})
-
-  // ============================================
+  // =====================================================
   // CATEGORY-003
   // Membuka halaman tambah kategori
-  // ============================================
+  // =====================================================
   it("CATEGORY-003 - Membuka halaman tambah kategori", () => {
 
-    cy.contains("Add Category")
-      .click()
+    cy.get('a[href$="/admin/categories/create"]')
+      .should("be.visible")
+      .and("contain", "Add Category")
+      .click();
 
-    cy.url()
-      .should("include", "/categories/create")
+    // Validasi URL
+    cy.location("pathname")
+      .should("eq", "/admin/categories/create");
+  });
 
-  })
 
-
-  // ============================================
+  // =====================================================
   // CATEGORY-004
   // Membuka halaman edit kategori
-  // ============================================
+  // =====================================================
   it("CATEGORY-004 - Membuka halaman edit kategori", () => {
 
-    cy.get('a[href*="/edit"]')
+    // Cari link edit kategori
+    cy.get('a[href*="/admin/categories/"][href$="/edit"]')
+      .should("have.length.greaterThan", 0)
       .first()
-      .click()
+      .should("be.visible")
+      .click();
 
-    cy.url()
-      .should("include", "/edit")
+    // Validasi URL halaman edit
+    cy.location("pathname")
+      .should(
+        "match",
+        /\/admin\/categories\/.+\/edit$/
+      );
+  });
 
-  })
 
-
-  // ============================================
-// CATEGORY-005
-// Menambahkan lalu menghapus kategori
-// ============================================
-it("CATEGORY-005 - Menghapus kategori", () => {
-
-  // Nama kategori unik agar tidak duplicate
-  const categoryName = `Automation Delete ${Date.now()}`
-
-  // =============================
-  // Tambah kategori
-  // =============================
-  cy.contains("Add Category").click()
-
-  cy.url().should("include", "/categories/create")
-
-  cy.get('input[name="name"]')
-    .type(categoryName)
-
-  cy.get('input[name="icon"]')
-    .clear()
-    .type("solar:folder-linear")
-
-  cy.get('textarea[name="description"]')
-    .type("Kategori khusus automation testing.")
-
-  cy.get('input[type="checkbox"]')
-    .check({ force: true })
-
-  cy.contains("Create Category").click()
-
-  cy.url({ timeout: 10000 })
-    .should("include", "/admin/categories")
-
-  // =============================
-  // Cari kategori yang baru dibuat
-  // =============================
-  cy.get('input[name="search"]')
-    .clear()
-    .type(`${categoryName}{enter}`)
-
-  cy.contains(categoryName)
-    .should("exist")
-
-  // =============================
-  // Hapus kategori tersebut
-  // =============================
-  cy.on("window:confirm", () => true)
-
-  cy.contains("tr", categoryName)
-    .within(() => {
-      cy.get('button[title="Delete"]').click()
-    })
-
-  // =============================
-  // Validasi data sudah terhapus
-  // =============================
-  cy.reload()
-
-  cy.get('input[name="search"]')
-    .clear()
-    .type(`${categoryName}{enter}`)
-
-  cy.contains(categoryName)
-    .should("not.exist")
-
-})
-  // ============================================
-  // CATEGORY-006
+  // =====================================================
+  // CATEGORY-005
   // Menambahkan kategori baru
-  // ============================================
-  it("CATEGORY-006 - Menambahkan kategori baru", () => {
+  // =====================================================
+  it("CATEGORY-005 - Menambahkan kategori baru", () => {
 
-  const categoryName = `Automation Testing ${Date.now()}`
-
-
-  cy.contains("Add Category")
-    .click()
+    const categoryName =
+      `Automation Create ${Date.now()}`;
 
 
-  cy.url()
-    .should("include", "/categories/create")
+    // -----------------------------------------------------
+    // Buka halaman tambah kategori
+    // -----------------------------------------------------
+
+    cy.get('a[href$="/admin/categories/create"]')
+      .should("be.visible")
+      .and("contain", "Add Category")
+      .click();
+
+    cy.location("pathname")
+      .should("eq", "/admin/categories/create");
 
 
-  cy.get('input[name="name"]')
-    .type(categoryName)
+    // -----------------------------------------------------
+    // Isi form kategori
+    // -----------------------------------------------------
+
+    cy.get('input[name="name"]')
+      .should("be.visible")
+      .type(categoryName);
+
+    cy.get('input[name="icon"]')
+      .should("be.visible")
+      .clear()
+      .type("solar:folder-linear");
+
+    cy.get('textarea[name="description"]')
+      .should("be.visible")
+      .type(
+        "Kategori khusus untuk automation testing."
+      );
+
+    cy.get('input[type="checkbox"]')
+      .should("exist")
+      .check();
 
 
-  cy.get('input[name="icon"]')
-    .clear()
-    .type("solar:gamepad-linear")
+    // -----------------------------------------------------
+    // Monitor proses create
+    // -----------------------------------------------------
+
+    cy.intercept(
+      "POST",
+      "**/admin/categories"
+    ).as("createCategory");
 
 
-  cy.get('textarea[name="description"]')
-    .type("Kategori untuk pengujian automation Cypress.")
+    // -----------------------------------------------------
+    // Submit form
+    // -----------------------------------------------------
+
+    cy.contains("button", "Create Category")
+      .should("be.visible")
+      .click();
 
 
-  cy.get('input[type="checkbox"]')
-    .check({force:true})
+    // -----------------------------------------------------
+    // Validasi response create
+    // -----------------------------------------------------
+
+    cy.wait("@createCategory")
+      .then(({ response }) => {
+
+        expect(response).to.exist;
+
+        expect([200, 201, 302])
+          .to.include(response.statusCode);
+
+      });
 
 
-  cy.contains("Create Category")
-    .click()
+    // -----------------------------------------------------
+    // Validasi kembali ke halaman kategori
+    // -----------------------------------------------------
+
+    cy.location("pathname", {
+      timeout: 10000
+    })
+      .should("eq", "/admin/categories");
 
 
-  cy.url({timeout:10000})
-    .should("include", "/admin/categories")
+    // -----------------------------------------------------
+    // Cari kategori yang baru dibuat
+    // -----------------------------------------------------
+
+    cy.intercept(
+      "GET",
+      "**/admin/categories?search=*"
+    ).as("searchCreatedCategory");
+
+    cy.get('input[name="search"]')
+      .should("be.visible")
+      .clear()
+      .type(`${categoryName}{enter}`);
 
 
-  cy.contains(categoryName)
-    .should("be.visible")
+    // -----------------------------------------------------
+    // Validasi request search
+    // -----------------------------------------------------
 
-}) 
+    cy.wait("@searchCreatedCategory")
+      .its("response.statusCode")
+      .should("eq", 200);
 
-})
+
+    // -----------------------------------------------------
+    // Validasi parameter URL
+    // -----------------------------------------------------
+
+    cy.location("search")
+      .then((search) => {
+
+        const params = new URLSearchParams(search);
+
+        expect(params.get("search"))
+          .to.eq(categoryName);
+
+      });
+
+
+    // -----------------------------------------------------
+    // Validasi kategori berhasil dibuat
+    // -----------------------------------------------------
+
+    cy.contains(categoryName, {
+      timeout: 10000
+    })
+      .should("be.visible");
+
+  });
+
+// =====================================================
+// CATEGORY-006
+// Menghapus kategori
+// =====================================================
+it("CATEGORY-006 - Menghapus kategori", () => {
+
+  // ---------------------------------------------
+  // Pastikan terdapat kategori yang bisa dihapus
+  // ---------------------------------------------
+  cy.get("tbody tr", { timeout: 10000 })
+    .should("have.length.greaterThan", 0);
+
+  // Simpan jumlah kategori sebelum dihapus
+  cy.get("tbody tr")
+    .then(($rows) => {
+
+      const totalBefore = $rows.length;
+
+      // ---------------------------------------------
+      // Ambil kategori pertama yang memiliki tombol Delete
+      // ---------------------------------------------
+      cy.get("tbody tr")
+        .filter(":has(button[title='Delete'])")
+        .first()
+        .should("be.visible")
+        .within(() => {
+
+          // Pastikan tombol Delete tersedia
+          cy.get('button[title="Delete"]')
+            .should("be.visible");
+
+          // Konfirmasi browser
+          cy.on("window:confirm", (message) => {
+            expect(message).to.contain("Delete this category?");
+            return true;
+          });
+
+          // Klik Delete
+          cy.get('button[title="Delete"]')
+            .click();
+        });
+
+      // ---------------------------------------------
+      // Tunggu halaman kembali / refresh
+      // ---------------------------------------------
+      cy.location("pathname", {
+        timeout: 10000
+      })
+        .should("eq", "/admin/categories");
+
+      // ---------------------------------------------
+      // Pastikan jumlah kategori berkurang
+      // ---------------------------------------------
+      cy.get("tbody tr", {
+        timeout: 10000
+      })
+        .should(($newRows) => {
+
+          expect($newRows.length)
+            .to.be.lessThan(totalBefore);
+
+        });
+
+    });
+
+});
+});

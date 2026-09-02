@@ -2,9 +2,11 @@ const { defineConfig } = require("cypress");
 
 module.exports = defineConfig({
   e2e: {
-    setupNodeEvents(on, config) {
-      // implement node event listeners here
+    baseUrl: "https://zlm.hummatech.com",
+
+    env: {
+      ADMIN_EMAIL: "admin@zlm.id",
+      ADMIN_PASSWORD: "admin123",
     },
-    specPattern: "cypress/e2e/**/*.cy.js",
   },
 });
