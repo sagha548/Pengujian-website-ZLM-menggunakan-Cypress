@@ -19,17 +19,17 @@ describe("Menu Pelanggan ZLM", () => {
   // PEL-001
   // Membuka Menu Pelanggan
   // ===================================
-it("PEL-001 - Membuka Menu Pelanggan", () => {
+  it("PEL-001 - Membuka Menu Pelanggan", () => {
 
-  cy.location("pathname")
-    .should("eq", "/admin/customers");
+    cy.location("pathname")
+      .should("eq", "/admin/customers");
 
-  cy.get("h1")
-    .should("contain.text", "Pelanggan");
+    cy.get("h1")
+      .should("contain.text", "Pelanggan");
 
-  cy.get("table")
-    .should("be.visible");
-});
+    cy.get("table")
+      .should("be.visible");
+  });
 
 
   // ===================================
@@ -53,7 +53,6 @@ it("PEL-001 - Membuka Menu Pelanggan", () => {
     cy.location("search")
       .should("include", "search=customer");
 
-    // Assert hasil pencarian tampil
     cy.get("tbody tr")
       .should("have.length.at.least", 1);
 
@@ -86,16 +85,16 @@ it("PEL-001 - Membuka Menu Pelanggan", () => {
     cy.location("search")
       .should("include", "status=active");
 
-    // Assert hasil filter Active
     cy.get("tbody tr")
       .should("have.length.at.least", 1);
 
-    cy.get("tbody tr").each(($row) => {
-      cy.wrap($row)
-        .find("td")
-        .eq(2)
-        .should("contain.text", "Active");
-    });
+    cy.get("tbody tr")
+      .each(($row) => {
+        cy.wrap($row)
+          .find("td")
+          .eq(2)
+          .should("contain.text", "Active");
+      });
   });
 
 
@@ -120,16 +119,16 @@ it("PEL-001 - Membuka Menu Pelanggan", () => {
     cy.location("search")
       .should("include", "status=inactive");
 
-    // Assert hasil filter Inactive
     cy.get("tbody tr")
       .should("have.length.at.least", 1);
 
-    cy.get("tbody tr").each(($row) => {
-      cy.wrap($row)
-        .find("td")
-        .eq(2)
-        .should("contain.text", "Inactive");
-    });
+    cy.get("tbody tr")
+      .each(($row) => {
+        cy.wrap($row)
+          .find("td")
+          .eq(2)
+          .should("contain.text", "Inactive");
+      });
   });
 
 
@@ -137,15 +136,16 @@ it("PEL-001 - Membuka Menu Pelanggan", () => {
   // PEL-005
   // Detail Pelanggan
   // ===================================
-it("PEL-005 - Detail Pelanggan", () => {
+  it("PEL-005 - Detail Pelanggan", () => {
 
-  cy.get('a[href^="https://zlm.hummatech.com/admin/customers/"]')
-    .contains("Detail")
-    .first()
-    .should("be.visible")
-    .click();
+    cy.get('a[href*="/admin/customers/"]')
+      .contains("Detail")
+      .first()
+      .should("be.visible")
+      .click();
 
-  cy.location("pathname")
-    .should("match", /^\/admin\/customers\/[^/]+$/);
-});
+    cy.location("pathname")
+      .should("match", /^\/admin\/customers\/[^/]+$/);
+  });
+
 });

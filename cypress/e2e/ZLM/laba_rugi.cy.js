@@ -131,7 +131,7 @@ describe("Menu Laba Rugi ZLM", () => {
     cy.contains("span", "Biaya Operasional (Pengiriman)")
       .should("be.visible");
 
-    // Laba Bersih pada bagian HPP & Laba
+    // Laba Bersih
     cy.contains("span", "LABA BERSIH")
       .should("be.visible");
 
@@ -144,39 +144,101 @@ describe("Menu Laba Rugi ZLM", () => {
   // =====================================================
   it("LABA-007 - Filter Berdasarkan Tanggal", () => {
 
+    // -----------------------------------------
+    // Gunakan tanggal dinamis
+    // -----------------------------------------
+    const today = new Date();
+
+    const startDate = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      1
+    );
+
+    const endDate = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate()
+    );
+
+    // Format YYYY-MM-DD
+    const formatDate = (date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+
+      return `${year}-${month}-${day}`;
+    };
+
+    const dynamicStartDate = formatDate(startDate);
+    const dynamicEndDate = formatDate(endDate);
+
+
+    // -----------------------------------------
     // Isi Start Date
+    // -----------------------------------------
     cy.get('input[name="start_date"]')
       .should("be.visible")
-      .type("2026-07-01");
+      .clear()
+      .type(dynamicStartDate);
 
+
+    // -----------------------------------------
     // Isi End Date
+    // -----------------------------------------
     cy.get('input[name="end_date"]')
       .should("be.visible")
-      .type("2026-07-17");
+      .clear()
+      .type(dynamicEndDate);
 
+
+    // -----------------------------------------
     // Monitor request filter
+    // -----------------------------------------
     cy.intercept(
       "GET",
       "**/admin/reports/profit-loss*"
     ).as("filterProfitLoss");
 
+
+    // -----------------------------------------
     // Klik Filter
+    // -----------------------------------------
     cy.contains("button", "Filter")
       .should("be.visible")
       .click();
 
+
+    // -----------------------------------------
     // Pastikan request berhasil
+    // -----------------------------------------
     cy.wait("@filterProfitLoss")
       .its("response.statusCode")
       .should("eq", 200);
 
+
+    // -----------------------------------------
     // Pastikan halaman tetap Laba Rugi
+    // -----------------------------------------
     cy.location("pathname")
       .should("eq", "/admin/reports/profit-loss");
 
+
+    // -----------------------------------------
     // Pastikan periode tampil
+    // -----------------------------------------
     cy.contains("Periode:")
       .should("be.visible");
+
+
+    // -----------------------------------------
+    // Pastikan tanggal yang digunakan benar
+    // -----------------------------------------
+    cy.get('input[name="start_date"]')
+      .should("have.value", dynamicStartDate);
+
+    cy.get('input[name="end_date"]')
+      .should("have.value", dynamicEndDate);
 
   });
 
@@ -187,65 +249,129 @@ describe("Menu Laba Rugi ZLM", () => {
   // =====================================================
   it("LABA-008 - Reset Filter", () => {
 
+    // -----------------------------------------
+    // Ambil tanggal saat ini
+    // -----------------------------------------
+    const today = new Date();
+
+    const expectedStartDate = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      1
+    );
+
+    const expectedEndDate = new Date(
+      today.getFullYear(),
+      today.getMonth() + 1,
+      0
+    );
+
+    // Format YYYY-MM-DD
+    const formatDate = (date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+
+      return `${year}-${month}-${day}`;
+    };
+
+    const dynamicStartDate = formatDate(expectedStartDate);
+    const dynamicEndDate = formatDate(expectedEndDate);
+
+
+    // -----------------------------------------
     // Pastikan tombol Reset tersedia
+    // -----------------------------------------
     cy.get('a[href$="/admin/reports/profit-loss"]')
       .filter(":contains('Reset')")
       .should("be.visible")
       .click();
 
+
+    // -----------------------------------------
     // Pastikan kembali ke halaman default
+    // -----------------------------------------
     cy.location("pathname", {
       timeout: 10000
     })
       .should("eq", "/admin/reports/profit-loss");
 
-    // Pastikan filter kembali ke nilai default
+
+    // -----------------------------------------
+    // Pastikan filter kembali ke default
+    // -----------------------------------------
     cy.get('select[name="period"]')
       .should("have.value", "monthly");
 
-    cy.get('input[name="start_date"]')
-      .should("have.value", "2026-08-01");
 
+    // -----------------------------------------
+    // Pastikan start date menggunakan
+    // tanggal awal bulan berjalan
+    // -----------------------------------------
+    cy.get('input[name="start_date"]')
+      .should("have.value", dynamicStartDate);
+
+
+    // -----------------------------------------
+    // Pastikan end date menggunakan
+    // tanggal akhir bulan berjalan
+    // -----------------------------------------
     cy.get('input[name="end_date"]')
-      .should("have.value", "2026-08-31");
+      .should("have.value", dynamicEndDate);
 
   });
 
 
-// =====================================================
-// LABA-009
-// Menampilkan Nilai Keuangan
-// =====================================================
-it("LABA-009 - Menampilkan Nilai Keuangan", () => {
+  // =====================================================
+  // LABA-009
+  // Menampilkan Nilai Keuangan
+  // =====================================================
+  it("LABA-009 - Menampilkan Nilai Keuangan", () => {
 
-  // Pastikan halaman Laba Rugi
-  cy.location("pathname")
-    .should("eq", "/admin/reports/profit-loss");
+    // Pastikan halaman Laba Rugi
+    cy.location("pathname")
+      .should("eq", "/admin/reports/profit-loss");
 
-  // Total Pendapatan
-  cy.contains("div.text-xs.text-gray-400", "Total Pendapatan")
-    .should("exist")
-    .parent()
-    .should("contain.text", "Rp");
 
-  // Total HPP
-  cy.contains("div.text-xs.text-gray-400", "Total HPP")
-    .should("exist")
-    .parent()
-    .should("contain.text", "Rp");
+    // Total Pendapatan
+    cy.contains(
+      "div.text-xs.text-gray-400",
+      "Total Pendapatan"
+    )
+      .should("exist")
+      .parent()
+      .should("contain.text", "Rp");
 
-  // Laba Kotor
-  cy.contains("div.text-xs.text-gray-400", "Laba Kotor")
-    .should("exist")
-    .parent()
-    .should("contain.text", "Rp");
 
-  // Laba Bersih
-  cy.contains("div.text-xs.text-gray-400", "Laba Bersih")
-    .should("exist")
-    .parent()
-    .should("contain.text", "Rp");
+    // Total HPP
+    cy.contains(
+      "div.text-xs.text-gray-400",
+      "Total HPP"
+    )
+      .should("exist")
+      .parent()
+      .should("contain.text", "Rp");
 
-});
+
+    // Laba Kotor
+    cy.contains(
+      "div.text-xs.text-gray-400",
+      "Laba Kotor"
+    )
+      .should("exist")
+      .parent()
+      .should("contain.text", "Rp");
+
+
+    // Laba Bersih
+    cy.contains(
+      "div.text-xs.text-gray-400",
+      "Laba Bersih"
+    )
+      .should("exist")
+      .parent()
+      .should("contain.text", "Rp");
+
+  });
 
 });

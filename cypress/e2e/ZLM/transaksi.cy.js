@@ -1,4 +1,8 @@
 describe("Menu Transaksi ZLM", () => {
+
+  // ===================================
+  // SETUP
+  // ===================================
   beforeEach(() => {
     cy.viewport(1400, 900);
 
@@ -10,20 +14,24 @@ describe("Menu Transaksi ZLM", () => {
       .should("eq", "/admin/transactions");
   });
 
-  // =====================================================
-  // TRAN-001 - Membuka Menu Transactions
-  // =====================================================
 
+  // ===================================
+  // TRAN-001
+  // Membuka Menu Transactions
+  // ===================================
   it("TRAN-001 - Membuka Menu Transactions", () => {
+
     cy.contains("Transactions")
       .should("be.visible");
   });
 
-  // =====================================================
-  // TRAN-002 - Menampilkan Data Transaksi
-  // =====================================================
 
+  // ===================================
+  // TRAN-002
+  // Menampilkan Data Transaksi
+  // ===================================
   it("TRAN-002 - Menampilkan Data Transaksi", () => {
+
     cy.contains("Total Orders")
       .should("be.visible");
 
@@ -43,11 +51,13 @@ describe("Menu Transaksi ZLM", () => {
       .should("be.visible");
   });
 
-  // =====================================================
-  // TRAN-003 - Mencari Data Order
-  // =====================================================
 
+  // ===================================
+  // TRAN-003
+  // Mencari Data Order
+  // ===================================
   it("TRAN-003 - Mencari Data Order", () => {
+
     cy.get('input[name="search"]')
       .should("be.visible")
       .clear()
@@ -57,63 +67,43 @@ describe("Menu Transaksi ZLM", () => {
       .should("be.visible");
   });
 
-  // =====================================================
-  // TRAN-004 - Filter Method Pembayaran
-  // =====================================================
 
+  // ===================================
+  // TRAN-004
+  // Filter Method Pembayaran
+  // ===================================
   it("TRAN-004 - Filter Method Pembayaran", () => {
-    cy.get("select")
-      .first()
+
+    cy.get('select[name="payment_method"]')
       .should("be.visible")
-      .find("option")
-      .then(($options) => {
-        const option = [...$options].find(
-          (el) => el.textContent.trim() === "Xendit"
-        );
+      .select("xendit");
 
-        expect(option).to.exist;
-
-        cy.get("select")
-          .first()
-          .select(option.value);
-      });
-
-    cy.get("select")
-      .first()
-      .should("not.have.value", "");
+    cy.get('select[name="payment_method"]')
+      .should("have.value", "xendit");
   });
 
-  // =====================================================
-  // TRAN-005 - Filter Status Transaksi
-  // =====================================================
 
+  // ===================================
+  // TRAN-005
+  // Filter Status Transaksi
+  // ===================================
   it("TRAN-005 - Filter Status Transaksi", () => {
-    cy.get("select")
-      .eq(1)
+
+    cy.get('select[name="payment_status"]')
       .should("be.visible")
-      .find("option")
-      .then(($options) => {
-        const option = [...$options].find(
-          (el) => el.textContent.trim() === "Unpaid"
-        );
+      .select("unpaid");
 
-        expect(option).to.exist;
-
-        cy.get("select")
-          .eq(1)
-          .select(option.value);
-      });
-
-    cy.get("select")
-      .eq(1)
-      .should("not.have.value", "");
+    cy.get('select[name="payment_status"]')
+      .should("have.value", "unpaid");
   });
 
-  // =====================================================
-  // TRAN-006 - Melihat Detail Transaksi
-  // =====================================================
 
+  // ===================================
+  // TRAN-006
+  // Melihat Detail Transaksi
+  // ===================================
   it("TRAN-006 - Melihat Detail Transaksi", () => {
+
     cy.contains("Detail")
       .first()
       .should("be.visible")
@@ -126,11 +116,13 @@ describe("Menu Transaksi ZLM", () => {
       .should("be.visible");
   });
 
-  // =====================================================
-  // TRAN-007 - Membuka dan Menampilkan Form Create Transaction
-  // =====================================================
 
+  // ===================================
+  // TRAN-007
+  // Membuka Form Create Transaction
+  // ===================================
   it("TRAN-007 - Membuka dan Menampilkan Form Create Transaction", () => {
+
     cy.visit("/admin/transactions/create");
 
     cy.location("pathname")
@@ -153,15 +145,16 @@ describe("Menu Transaksi ZLM", () => {
       .should("be.visible");
   });
 
-  // =====================================================
-  // TRAN-008 - Validasi Customer Kosong
-  // =====================================================
 
+  // ===================================
+  // TRAN-008
+  // Validasi Customer Kosong
+  // ===================================
   it("TRAN-008 - Validasi Customer Kosong", () => {
+
     cy.visit("/admin/transactions/create");
 
-    cy.get("select")
-      .first()
+    cy.get('select[name="user_id"]')
       .should("be.visible")
       .and("have.value", "");
 
@@ -170,113 +163,107 @@ describe("Menu Transaksi ZLM", () => {
       .should("be.visible")
       .click();
 
-    cy.get("select")
-      .first()
+    cy.get('select[name="user_id"]')
       .should("have.prop", "validity")
       .and("have.property", "valid", false);
   });
 
-  // =====================================================
-  // TRAN-009 - Menambahkan Item Laptop ke Transaksi
-  // =====================================================
 
+  // ===================================
+  // TRAN-009
+  // Menambahkan Item Laptop ke Transaksi
+  // ===================================
   it("TRAN-009 - Menambahkan Item Laptop ke Transaksi", () => {
+
     cy.visit("/admin/transactions/create");
 
-    // Pastikan item pertama tersedia
-    cy.get("select")
-      .eq(1)
+    cy.get('select[name^="items["][name$="[laptop_id]"]')
+      .should("have.length", 1)
       .should("be.visible");
 
-    // Pilih laptop
-    cy.get("select")
-      .eq(1)
+    cy.get('select[name^="items["][name$="[laptop_id]"]')
       .find("option")
       .then(($options) => {
+
         const option = [...$options].find(
           (el) => el.value && el.value !== ""
         );
 
         expect(option).to.exist;
 
-        cy.get("select")
-          .eq(1)
+        cy.get('select[name^="items["][name$="[laptop_id]"]')
           .select(option.value);
       });
 
-    // Pastikan laptop berhasil dipilih
-    cy.get("select")
-      .eq(1)
+    cy.get('select[name^="items["][name$="[laptop_id]"]')
       .should("not.have.value", "");
 
-    // Tambahkan item baru
-    cy.get("select")
-      .then(($selects) => {
-        const beforeCount = $selects.length;
+    cy.get('select[name^="items["][name$="[laptop_id]"]')
+      .its("length")
+      .then((beforeCount) => {
 
         cy.contains("+ Add Item")
           .should("be.visible")
           .click();
 
-        cy.get("select")
-          .should("have.length.greaterThan", beforeCount);
+        cy.get('select[name^="items["][name$="[laptop_id]"]')
+          .should("have.length", beforeCount + 1);
       });
   });
 
-  // =====================================================
-  // TRAN-010 - Memilih Payment Method
-  // =====================================================
 
+  // ===================================
+  // TRAN-010
+  // Memilih Payment Method
+  // ===================================
   it("TRAN-010 - Memilih Payment Method", () => {
+
     cy.visit("/admin/transactions/create");
 
-    cy.contains("Manual Transfer")
+    cy.get('input[name="payment_method"][value="manual_transfer"]')
       .should("be.visible")
-      .click();
+      .check();
+
+    cy.get('input[name="payment_method"][value="manual_transfer"]')
+      .should("be.checked");
 
     cy.contains("Customer upload bukti transfer nanti")
       .should("be.visible");
   });
 
-  // =====================================================
-  // TRAN-011 - Validasi Form Transaksi
-  // =====================================================
 
+  // ===================================
+  // TRAN-011
+  // Validasi Form Transaksi
+  // ===================================
   it("TRAN-011 - Validasi Form Transaksi", () => {
+
     cy.visit("/admin/transactions/create");
 
-    // Customer
-    cy.get("select")
-      .first()
+    cy.get('select[name="user_id"]')
       .should("be.visible");
 
-    // Item laptop
-    cy.get("select")
-      .eq(1)
+    cy.get('select[name^="items["][name$="[laptop_id]"]')
       .should("be.visible");
 
-    // Quantity
-    cy.get('input[type="number"]')
-      .first()
+    cy.get('input[name^="items["][name$="[quantity]"]')
       .should("be.visible");
 
-    // Payment method
-    cy.contains("Manual Transfer")
+    cy.get('input[name="payment_method"]')
+      .should("exist");
+
+    cy.get('textarea[name="shipping_address"]')
       .should("be.visible");
 
-    // Shipping address
-    cy.get("textarea")
-      .first()
+    cy.get('textarea[name="notes"]')
       .should("be.visible");
 
-    // Catatan
-    cy.get("textarea")
-      .last()
+    cy.get('input[name="shipping_cost"]')
       .should("be.visible");
 
-    // Tombol submit
     cy.contains("button", "Create Transaction")
       .scrollIntoView()
       .should("be.visible");
   });
+
 });

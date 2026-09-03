@@ -1,26 +1,7 @@
 describe('UAT - Hero Slider ZLM', () => {
 
   beforeEach(() => {
-    // Login sebagai admin
-    cy.visit('/login');
-
-    cy.get('input[type="email"]')
-      .should('be.visible')
-      .type(Cypress.env('ADMIN_EMAIL'));
-
-    cy.get('input[type="password"]')
-      .should('be.visible')
-      .type(Cypress.env('ADMIN_PASSWORD'));
-
-    cy.get('button[type="submit"]')
-      .should('be.visible')
-      .click();
-
-    // Pastikan berhasil login
-    cy.url()
-      .should('include', '/admin');
-
-    // Masuk ke halaman Hero Slider
+    cy.login();
     cy.visit('/admin/sliders');
 
     cy.url()
@@ -51,6 +32,8 @@ describe('UAT - Hero Slider ZLM', () => {
   // =====================================================
   it('Admin dapat menambahkan slider', () => {
 
+    const sliderTitle = `Slider Cypress ${Date.now()}`;
+
     cy.contains('Tambah Slider')
       .should('be.visible')
       .click();
@@ -61,7 +44,7 @@ describe('UAT - Hero Slider ZLM', () => {
     // Isi judul
     cy.get('input[name="title"]')
       .should('be.visible')
-      .type('Slider Cypress');
+      .type(sliderTitle);
 
     // Isi deskripsi
     cy.get('textarea[name="description"]')
@@ -74,7 +57,6 @@ describe('UAT - Hero Slider ZLM', () => {
       .selectFile('cypress/fixtures/slider.jpg');
 
     // Submit form
-    // Jangan menggunakan button[type="submit"] karena ada 2 tombol.
     cy.get('form')
       .find('button[type="submit"]')
       .last()
@@ -85,9 +67,24 @@ describe('UAT - Hero Slider ZLM', () => {
     cy.url({ timeout: 10000 })
       .should('include', '/admin/sliders');
 
-    // Pastikan data slider muncul
-    cy.contains('Slider Cypress')
+    // Pastikan slider berhasil dibuat
+    cy.contains(sliderTitle)
       .should('be.visible');
+
+    // Cleanup slider yang dibuat oleh test
+    cy.contains(sliderTitle)
+      .closest('tr')
+      .within(() => {
+        cy.on('window:confirm', () => true);
+
+        cy.get('button[title="Delete"]')
+          .should('be.visible')
+          .click();
+      });
+
+    // Pastikan slider sudah benar-benar hilang
+    cy.contains(sliderTitle)
+      .should('not.exist');
   });
 
 
@@ -97,11 +94,50 @@ describe('UAT - Hero Slider ZLM', () => {
   // =====================================================
   it('Admin dapat mengubah slider', () => {
 
-    // Ambil tombol Edit pertama
-    cy.get('a[title="Edit"]')
-      .first()
+    const sliderTitle = `Slider Cypress ${Date.now()}`;
+    const updatedTitle = `Slider Cypress Updated ${Date.now()}`;
+
+    // Buat data slider terlebih dahulu
+    cy.contains('Tambah Slider')
       .should('be.visible')
       .click();
+
+    cy.url()
+      .should('include', '/admin/sliders/create');
+
+    cy.get('input[name="title"]')
+      .should('be.visible')
+      .type(sliderTitle);
+
+    cy.get('textarea[name="description"]')
+      .should('be.visible')
+      .type('Automation Testing');
+
+    cy.get('input[type="file"]')
+      .should('exist')
+      .selectFile('cypress/fixtures/slider.jpg');
+
+    cy.get('form')
+      .find('button[type="submit"]')
+      .last()
+      .should('be.visible')
+      .click();
+
+    cy.url({ timeout: 10000 })
+      .should('include', '/admin/sliders');
+
+    // Pastikan data berhasil dibuat
+    cy.contains(sliderTitle)
+      .should('be.visible');
+
+    // Edit slider yang baru dibuat
+    cy.contains(sliderTitle)
+      .closest('tr')
+      .within(() => {
+        cy.get('a[title="Edit"]')
+          .should('be.visible')
+          .click();
+      });
 
     cy.url()
       .should('include', '/edit');
@@ -110,7 +146,7 @@ describe('UAT - Hero Slider ZLM', () => {
     cy.get('input[name="title"]')
       .should('be.visible')
       .clear()
-      .type('Slider Cypress Updated');
+      .type(updatedTitle);
 
     // Ubah deskripsi
     cy.get('textarea[name="description"]')
@@ -118,7 +154,7 @@ describe('UAT - Hero Slider ZLM', () => {
       .clear()
       .type('Automation Testing Updated');
 
-    // Klik tombol submit FORM, bukan logout
+    // Submit form
     cy.get('form')
       .find('button[type="submit"]')
       .last()
@@ -129,28 +165,82 @@ describe('UAT - Hero Slider ZLM', () => {
     cy.url({ timeout: 10000 })
       .should('include', '/admin/sliders');
 
-    cy.contains('Slider Cypress Updated')
+    // Pastikan data sudah berubah
+    cy.contains(updatedTitle)
       .should('be.visible');
-  });
 
-
-  // =====================================================
-  // UAT-SLIDER-004
-  // Admin dapat menghapus slider
-  // =====================================================
-  it('Admin dapat menghapus slider', () => {
-
-    // Konfirmasi browser SEBELUM tombol delete diklik
-    cy.on('window:confirm', () => true);
-
-    cy.get('tbody tr')
-      .first()
+    // Cleanup slider hasil test
+    cy.contains(updatedTitle)
+      .closest('tr')
       .within(() => {
+        cy.on('window:confirm', () => true);
 
         cy.get('button[title="Delete"]')
           .should('be.visible')
           .click();
       });
+
+    // Pastikan slider sudah benar-benar hilang
+    cy.contains(updatedTitle)
+      .should('not.exist');
+  });
+
+
+   // =====================================================
+  // UAT-SLIDER-004
+  // Admin dapat menghapus slider
+  // =====================================================
+  it('Admin dapat menghapus slider', () => {
+
+    const sliderTitle = `Slider Cypress Delete ${Date.now()}`;
+
+    // Buat data slider terlebih dahulu
+    cy.contains('Tambah Slider')
+      .should('be.visible')
+      .click();
+
+    cy.url()
+      .should('include', '/admin/sliders/create');
+
+    cy.get('input[name="title"]')
+      .should('be.visible')
+      .type(sliderTitle);
+
+    cy.get('textarea[name="description"]')
+      .should('be.visible')
+      .type('Automation Testing');
+
+    cy.get('input[type="file"]')
+      .should('exist')
+      .selectFile('cypress/fixtures/slider.jpg');
+
+    cy.get('form')
+      .find('button[type="submit"]')
+      .last()
+      .should('be.visible')
+      .click();
+
+    cy.url({ timeout: 10000 })
+      .should('include', '/admin/sliders');
+
+    // Pastikan data berhasil dibuat
+    cy.contains(sliderTitle)
+      .should('be.visible');
+
+    // Hapus slider yang dibuat sendiri
+    cy.contains(sliderTitle)
+      .closest('tr')
+      .within(() => {
+        cy.on('window:confirm', () => true);
+
+        cy.get('button[title="Delete"]')
+          .should('be.visible')
+          .click();
+      });
+
+    // Verifikasi slider benar-benar hilang
+    cy.contains(sliderTitle)
+      .should('not.exist');
 
     // Pastikan tetap berada di halaman Hero Slider
     cy.url()
@@ -164,11 +254,9 @@ describe('UAT - Hero Slider ZLM', () => {
   // =====================================================
   it('Admin dapat melihat daftar slider', () => {
 
-    // Pastikan tabel tampil
     cy.get('table')
       .should('be.visible');
 
-    // Header tabel
     cy.contains('Image')
       .should('exist');
 
@@ -184,30 +272,29 @@ describe('UAT - Hero Slider ZLM', () => {
     cy.contains('Actions')
       .should('exist');
 
-    // Pastikan ada data slider
     cy.get('tbody tr')
       .should('have.length.greaterThan', 0);
   });
 
 
+  // =====================================================
   // UAT-SLIDER-006
-it('Admin dapat menggunakan pagination slider', () => {
+  // Admin dapat menggunakan pagination slider
+  // =====================================================
+  it('Admin dapat menggunakan pagination slider', () => {
 
-  // Pastikan pagination tersedia
-  cy.get('nav[role="navigation"]')
-    .should('exist');
+    cy.get('nav[role="navigation"]')
+      .should('exist');
 
-  // Pastikan tombol halaman 2 tersedia
-  cy.get('a[aria-label="Go to page 2"]')
-    .should('exist')
-    .click();
+    cy.get('a[aria-label="Go to page 2"]')
+      .should('exist')
+      .click();
 
-  // Pastikan URL berubah ke halaman 2
-  cy.url()
-    .should('include', 'page=2');
+    cy.url()
+      .should('include', 'page=2');
 
-  // Pastikan tabel slider tetap tampil
-  cy.get('table')
-    .should('be.visible');
-});
+    cy.get('table')
+      .should('be.visible');
+  });
+
 });

@@ -112,12 +112,13 @@ describe("Laptop Management ZLM", () => {
   // Menambahkan laptop baru
   //
   // Laptop dibuat menggunakan nama unik.
-  // Data ini nantinya digunakan oleh LAPTOP-007
-  // untuk proses penghapusan.
+  // Setelah test selesai, laptop automation
+  // langsung dihapus sebagai cleanup.
   // =====================================================
   it("LAPTOP-006 - Menambahkan Laptop Baru", () => {
 
     const laptopName = `Automation Laptop ${Date.now()}`;
+
 
     // -----------------------------------------
     // Buka halaman tambah laptop
@@ -363,6 +364,35 @@ describe("Laptop Management ZLM", () => {
       timeout: 10000
     })
       .should("be.visible");
+
+
+    // -----------------------------------------
+    // CLEANUP
+    // Hapus laptop hasil automation
+    // -----------------------------------------
+    cy.on("window:confirm", () => true);
+
+    cy.contains("tbody tr", laptopName, {
+      timeout: 10000
+    })
+      .should("be.visible")
+      .within(() => {
+
+        cy.get('button[title="Delete"]')
+          .should("be.visible")
+          .click();
+      });
+
+
+    // -----------------------------------------
+    // Pastikan laptop berhasil dihapus
+    // -----------------------------------------
+    cy.reload();
+
+    cy.contains("tbody tr", laptopName, {
+      timeout: 10000
+    })
+      .should("not.exist");
   });
 
 
@@ -371,8 +401,7 @@ describe("Laptop Management ZLM", () => {
   // Menghapus laptop hasil automation
   //
   // Laptop yang dihapus adalah laptop yang dibuat
-  // oleh LAPTOP-006, sehingga tidak mengganggu
-  // data laptop asli.
+  // sendiri oleh test LAPTOP-007.
   // =====================================================
   it("LAPTOP-007 - Menghapus Laptop Hasil Automation", () => {
 
@@ -621,6 +650,9 @@ describe("Laptop Management ZLM", () => {
     // Hapus laptop yang BARU dibuat
     // =================================================
 
+    // Konfirmasi delete disiapkan sebelum klik
+    cy.on("window:confirm", () => true);
+
     cy.contains("tbody tr", laptopName, {
       timeout: 10000
     })
@@ -631,12 +663,6 @@ describe("Laptop Management ZLM", () => {
           .should("be.visible")
           .click();
       });
-
-
-    // -----------------------------------------
-    // Konfirmasi delete
-    // -----------------------------------------
-    cy.on("window:confirm", () => true);
 
 
     // -----------------------------------------

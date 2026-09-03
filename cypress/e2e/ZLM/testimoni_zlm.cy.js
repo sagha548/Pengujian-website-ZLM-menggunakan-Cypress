@@ -1,12 +1,16 @@
 describe("Menu Testimoni ZLM", () => {
   beforeEach(() => {
     cy.viewport(1400, 900)
+
     cy.login()
 
     cy.visit("/admin/testimonials")
 
     cy.location("pathname", { timeout: 10000 })
       .should("eq", "/admin/testimonials")
+
+    // Handle confirmation dialog sekali untuk semua test
+    cy.on("window:confirm", () => true)
   })
 
   // ===================================
@@ -89,8 +93,6 @@ describe("Menu Testimoni ZLM", () => {
       .should("be.visible")
 
     // Cleanup
-    cy.on("window:confirm", () => true)
-
     cy.contains("tr", testimonialName)
       .within(() => {
         cy.get('button[title="Delete"]')
@@ -193,8 +195,6 @@ describe("Menu Testimoni ZLM", () => {
       .should("contain.text", "Senior Software Engineer")
 
     // Cleanup
-    cy.on("window:confirm", () => true)
-
     cy.contains("tr", testimonialName)
       .within(() => {
         cy.get('button[title="Delete"]')
@@ -256,8 +256,6 @@ describe("Menu Testimoni ZLM", () => {
       .should("be.visible")
 
     // Hapus data
-    cy.on("window:confirm", () => true)
-
     cy.contains("tr", testimonialName)
       .within(() => {
         cy.get('button[title="Delete"]')
@@ -359,8 +357,6 @@ describe("Menu Testimoni ZLM", () => {
       .should("be.visible")
 
     // Cleanup
-    cy.on("window:confirm", () => true)
-
     cy.contains("tr", testimonialName)
       .within(() => {
         cy.get('button[title="Delete"]')
